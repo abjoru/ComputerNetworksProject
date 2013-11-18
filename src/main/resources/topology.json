@@ -1,0 +1,53 @@
+{ 
+	"nodes": [{
+			"id": "A",
+			"type": "node",
+			"ports": [{
+					"ip": "10.10.20.1",
+					"mask": "255.255.255.0",
+					"mac": "node-a-port1-mac-addr",
+					"mtu": 1400
+				}
+			],
+			"links": ["R"]
+		}, {
+			"id": "B",
+			"type": "node",
+			"ports": [{
+					"ip": "192.168.25.20",
+					"mask": "255.255.255.0",
+					"mac": "node-b-port1-mac-addr",
+					"mtu": 1400
+				}
+			],
+			"links": ["R", "C"]
+		}, {
+			"id": "C",
+			"type": "node",
+			"ports": [{
+					"ip": "192.168.25.15",
+					"mask": "255.255.255.0",
+					"mac": "node-c-port1-mac-addr",
+					"mtu": 1400
+				}
+			],
+			"links": ["R", "B"]
+		}, {
+			"id": "R",
+			"type": "router",
+			"ports": [{
+					"ip": "10.10.20.2",
+					"mask": "255.255.255.0",
+					"mac": "router-r-port1-mac-addr",
+					"mtu": 1400
+				}, {
+					"ip": "192.168.25.10",
+					"mask": "255.255.255.0",
+					"mac": "router-r-port2-mac-addr",
+					"mtu": 1400
+				}
+			],
+			"links": ["A", "B", "C"]
+		}
+	]
+}

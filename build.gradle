@@ -1,0 +1,21 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+group = 'edu.fit.cs.computernetworks'
+version = '1.0'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile "com.fasterxml.jackson.core:jackson-databind:2.2.3"
+	testCompile "junit:junit:4.+"
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '1.8'
+}
