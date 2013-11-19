@@ -1,8 +1,7 @@
 package edu.fit.cs.computernetworks.model;
 
-import java.io.Serializable;
 
-public interface OSILayerPacket extends Serializable {
+public interface OSIPacket {
 	
 	public byte[] getHeader();
 	public byte[] getData();

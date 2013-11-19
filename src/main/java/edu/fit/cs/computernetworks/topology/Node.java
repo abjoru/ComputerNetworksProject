@@ -16,11 +16,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 })
 public abstract class Node {
 
-	@JsonProperty
 	public String id;
 
 	@JsonProperty
+	@Deprecated
 	public List<String> links;
+	
+	public List<RoutingEntry> routing;
 	
 	public List<String> getLinks() {
 		if (links == null) {

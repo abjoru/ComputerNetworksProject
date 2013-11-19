@@ -1,28 +1,24 @@
 package edu.fit.cs.computernetworks;
 
-import java.util.Collection;
-
 import edu.fit.cs.computernetworks.model.Address;
-import edu.fit.cs.computernetworks.model.DataLinkLayer;
 import edu.fit.cs.computernetworks.model.IPPacket;
 import edu.fit.cs.computernetworks.topology.Node;
 import edu.fit.cs.computernetworks.topology.Topology;
-import edu.fit.cs.computernetworks.utils.Tuple;
 
-public abstract class NetworkNode<T extends Node> {
+public abstract class AbstractNetworkNode<T extends Node> {
 	
 	protected enum Transmit {
 		RECEIVE, SEND
 	}
 	
-	protected final T descriptor;
-	protected final NodeManager manager;
-	protected final DataLinkLayer linkLayer;
+	private int ident = 0;
 	
-	public NetworkNode(final Topology topo, final T descriptor, final NodeManager manager) {
+	protected final T descriptor;
+	protected final Topology topology;
+	
+	public AbstractNetworkNode(final Topology topo, final T descriptor) {
 		this.descriptor = descriptor;
-		this.manager = manager;
-		this.linkLayer = new DataLinkLayer(topo, descriptor);
+		this.topology = topo;
 	}
 	
 	public abstract void networkLayer(final byte[] msg, final Transmit transmit, final Address addr);
@@ -31,14 +27,21 @@ public abstract class NetworkNode<T extends Node> {
 		switch (transmit) {
 		case SEND:
 			// Fragment message and deliver to physical layer
-			final Tuple<String, Collection<IPPacket>> t = linkLayer.handleSend(message, addr);
-			for (final IPPacket pkg : t._2) {
-				physicalLayer(pkg, transmit, t._1);
+			final int mtu = mtu(addr.getSourceAddress());
+			final String destMac = topology.arpResolve(addr.getDestinationAddress());
+			
+			if (mtu < message.length) {
+				// TODO fragment message
+			} else {
+				final IPPacket pkg = new IPPacket(ident++, addr.sourceAddressToInt(), addr.destAddressToInt());
+				pkg.setData(message);
+				physicalLayer(pkg.toByteArray(), transmit, destMac);
 			}
 			
 			break;
 		case RECEIVE:
 			final IPPacket pkg = IPPacket.fromByteArray(message);
+			// TODO error correction/detection?
 			final byte[] data = pkg.getData();
 			
 			networkLayer(data, transmit, null);
@@ -48,18 +51,19 @@ public abstract class NetworkNode<T extends Node> {
 		}
 	}
 	
-	public void physicalLayer(final IPPacket packet, final Transmit transmit, final String macAddr) {
+	public void physicalLayer(final byte[] packet, final Transmit transmit, final String macAddr) {
 		switch (transmit) {
 		case SEND:
-			final NetworkNode<? extends Node> node = manager.route(macAddr);
-			node.physicalLayer(packet, Transmit.RECEIVE, null);
+			final AbstractNetworkNode<? extends Node> nextHop = topology.machineFor(macAddr);
+			nextHop.physicalLayer(packet, Transmit.RECEIVE, null);
 			break;
 		case RECEIVE:
-			linkLayer(packet.toByteArray(), transmit, null);
+			linkLayer(packet, transmit, null);
 			break;
 		default: // no-op
 		}
 	}
 	
+	abstract int mtu(final String localIp);
 	
 }

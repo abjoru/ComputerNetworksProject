@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-public class IPPacket implements OSILayerPacket {
+public class IPPacket implements OSIPacket {
 	private static final long serialVersionUID = 1L;
 
 	static final int HEADER_SIZE = 20; // in bytes

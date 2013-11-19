@@ -6,13 +6,13 @@ import edu.fit.cs.computernetworks.utils.IPUtils;
 
 public class Port {
 
-	private String ip;
-	private String mask;
-	private String mac;
-	private int mtu;
+	public String ip;
+	public String mask;
+	public String mac;
+	public int mtu;
 	
 	public Port() {
-		
+		// Default constructor required by JSON mapper
 	}
 	
 	public Port(final String ip, final String mask, final String mac, final int mtu) {
@@ -20,22 +20,6 @@ public class Port {
 		this.mask = mask;
 		this.mac = mac;
 		this.mtu = mtu;
-	}
-	
-	public String getIp() {
-		return ip;
-	}
-	
-	public String getMask() {
-		return mask;
-	}
-	
-	public String getMac() {
-		return mac;
-	}
-	
-	public int getMtu() {
-		return mtu;
 	}
 	
 	public byte[] toNetworkAddress() {
