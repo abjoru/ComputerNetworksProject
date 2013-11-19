@@ -43,4 +43,16 @@ public class TransportLayerPacket implements OSILayerPacket {
 		return false;
 	}
 
+	@Override
+	public byte[] getHeader() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public byte[] getData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

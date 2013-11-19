@@ -1,7 +1,6 @@
 package edu.fit.cs.computernetworks.topology;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Topology {
@@ -14,7 +13,7 @@ public class Topology {
 	
 	public Node nodeById(final String id) {
 		for (final Node node : nodes) {
-			if (node.getId().equals(id)) {
+			if (node.id.equals(id)) {
 				return node;
 			}
 		}
@@ -31,6 +30,7 @@ public class Topology {
 		return res;
 	}
 	
+	/*
 	public List<Node> connectionsByNode(final Node n, final Port local) {
 		final byte[] netAddr = local.toNetworkAddress();
 		final List<Node> res = new ArrayList<>();
@@ -38,7 +38,7 @@ public class Topology {
 		for (final String l : n.getLinks()) {
 			final Node link = nodeById(l);
 			
-			for (final Port p : link.getPorts()) {
+			for (final Port p : link.) {
 				final byte[] nodeNetAddr = p.toNetworkAddress();
 				if (Arrays.equals(netAddr, nodeNetAddr)) {
 					res.add(link);
@@ -47,6 +47,6 @@ public class Topology {
 		}
 		
 		return res;
-	}
+	}*/
 
 }

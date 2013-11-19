@@ -1,27 +1,31 @@
 package edu.fit.cs.computernetworks.topology;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Node {
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
-	private String id;
-	private String type;
-	private List<Port> ports;
-	private List<String> links;
-	
-	public String getId() {
-		return id;
-	}
-	
-	public String getType() {
-		return type;
-	}
-	
-	public List<Port> getPorts() {
-		return ports;
-	}
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "type")
+@JsonSubTypes({
+	@Type(name="host", value=Host.class),
+	@Type(name="router", value=Router.class)
+})
+public abstract class Node {
+
+	@JsonProperty
+	public String id;
+
+	@JsonProperty
+	public List<String> links;
 	
 	public List<String> getLinks() {
+		if (links == null) {
+			links = new ArrayList<>();
+		}
 		return links;
 	}
 }

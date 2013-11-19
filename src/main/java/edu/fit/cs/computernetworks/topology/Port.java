@@ -1,5 +1,7 @@
 package edu.fit.cs.computernetworks.topology;
 
+import java.util.Arrays;
+
 import edu.fit.cs.computernetworks.utils.IPUtils;
 
 public class Port {
@@ -8,6 +10,17 @@ public class Port {
 	private String mask;
 	private String mac;
 	private int mtu;
+	
+	public Port() {
+		
+	}
+	
+	public Port(final String ip, final String mask, final String mac, final int mtu) {
+		this.ip = ip;
+		this.mask = mask;
+		this.mac = mac;
+		this.mtu = mtu;
+	}
 	
 	public String getIp() {
 		return ip;
@@ -29,5 +42,9 @@ public class Port {
 		byte[] ipBytes = IPUtils.ipToByteArray(ip);
 		byte[] maskBytes = IPUtils.ipToByteArray(mask);
 		return IPUtils.networkAddress(ipBytes, maskBytes);
+	}
+
+	public boolean matches(byte[] networkAddr) {
+		return Arrays.equals(networkAddr, toNetworkAddress());
 	}
 }

@@ -1,66 +1,65 @@
 package edu.fit.cs.computernetworks;
 
-import edu.fit.cs.computernetworks.model.Address;
-import edu.fit.cs.computernetworks.model.OSILayerPacket;
-import edu.fit.cs.computernetworks.model.TransportLayer;
-import edu.fit.cs.computernetworks.model.TransportLayerPacket;
-import edu.fit.cs.computernetworks.topology.Node;
-import edu.fit.cs.computernetworks.utils.SimpleLogger;
+import java.util.Collection;
 
-public class NetworkNode implements Runnable {
+import edu.fit.cs.computernetworks.model.Address;
+import edu.fit.cs.computernetworks.model.DataLinkLayer;
+import edu.fit.cs.computernetworks.model.IPPacket;
+import edu.fit.cs.computernetworks.topology.Node;
+import edu.fit.cs.computernetworks.topology.Topology;
+import edu.fit.cs.computernetworks.utils.Tuple;
+
+public abstract class NetworkNode<T extends Node> {
 	
-	private enum Transmit {
+	protected enum Transmit {
 		RECEIVE, SEND
 	}
 	
-	private final Node self;
-	private final TransportLayer transportLayer = null;
-	private final SimpleLogger logger = new SimpleLogger("Node address, etc");
+	protected final T descriptor;
+	protected final NodeManager manager;
+	protected final DataLinkLayer linkLayer;
 	
-	public NetworkNode(final Node topologyNode) {
-		this.self = topologyNode;
+	public NetworkNode(final Topology topo, final T descriptor, final NodeManager manager) {
+		this.descriptor = descriptor;
+		this.manager = manager;
+		this.linkLayer = new DataLinkLayer(topo, descriptor);
 	}
 	
-	private void application(byte[] assemble) {
-		logger.log("Received packet: " + assemble);
-	}
+	public abstract void networkLayer(final byte[] msg, final Transmit transmit, final Address addr);
 	
-	public void transport(final byte[] msg, final Transmit type, final Address addr) {
-		switch (type) {
-		case SEND: // I.e. this node sends data to some destination..
-			for (final OSILayerPacket pkg : TransportLayerPacket.from(msg, addr, self.getPorts())) {
-				routing(pkg.toByteArray(), Transmit.SEND);
+	public void linkLayer(final byte[] message, final Transmit transmit, final Address addr) {
+		switch (transmit) {
+		case SEND:
+			// Fragment message and deliver to physical layer
+			final Tuple<String, Collection<IPPacket>> t = linkLayer.handleSend(message, addr);
+			for (final IPPacket pkg : t._2) {
+				physicalLayer(pkg, transmit, t._1);
 			}
-			break;
-		case RECEIVE: // I.e. received transmission from lower levels..
-			// Effectively transform input to TransportLayerPacket
 			
-			TransportLayerPacket segment = transportLayer.handleReceive(msg);
-			if (segment.matchesAddress(self)) {
-				final long sid = segment.getSegmentId();
-				if (sid > 0) { // does no segments represent -1?
-					if (transportLayer.queue(segment)) { // return true if all segments received?
-						application(transportLayer.assemble(segment));
-					}
-				}
-			}
+			break;
+		case RECEIVE:
+			final IPPacket pkg = IPPacket.fromByteArray(message);
+			final byte[] data = pkg.getData();
+			
+			networkLayer(data, transmit, null);
+			
 			break;
 		default: // no-op
 		}
 	}
-
-	public void routing(final byte[] pkg, final Transmit type) {
-		
+	
+	public void physicalLayer(final IPPacket packet, final Transmit transmit, final String macAddr) {
+		switch (transmit) {
+		case SEND:
+			final NetworkNode<? extends Node> node = manager.route(macAddr);
+			node.physicalLayer(packet, Transmit.RECEIVE, null);
+			break;
+		case RECEIVE:
+			linkLayer(packet.toByteArray(), transmit, null);
+			break;
+		default: // no-op
+		}
 	}
 	
-	public void dataLink() {
-		
-	}
-
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 }

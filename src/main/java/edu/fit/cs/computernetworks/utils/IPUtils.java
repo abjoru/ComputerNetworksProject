@@ -2,6 +2,7 @@ package edu.fit.cs.computernetworks.utils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 
 public class IPUtils {
 
@@ -21,6 +22,21 @@ public class IPUtils {
 		}
 		
 		return networkAddress;
+	}
+	
+	public static int byteArrayIpToInt(final byte[] ip) {
+		return ByteBuffer.wrap(ip).getInt();
+	}
+	
+	public static byte[] intIpToByteArray(final int ip) {
+		final ByteBuffer buff = ByteBuffer.allocate(4);
+		
+		buff.put((byte) ((ip >> 24)));
+		buff.put((byte) ((ip << 8) >> 24));
+		buff.put((byte) ((ip << 16) >> 24));
+		buff.put((byte) ((ip << 24) >> 24));
+		
+		return buff.array();
 	}
 	
 }
