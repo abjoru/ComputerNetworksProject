@@ -21,9 +21,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 	private void application(byte[] assemble, Address addr) {
 	}
 
-	@Override
-	public void networkLayer(final byte[] msg, final Transmit transmit, final Address addr) {
-		// TODO Auto-generated method stub
+	public void transport(final byte[] payload, final Transmit transmit, final Address addr) {
 		
 	}
 	
