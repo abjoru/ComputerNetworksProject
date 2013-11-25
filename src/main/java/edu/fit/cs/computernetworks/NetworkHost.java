@@ -7,19 +7,16 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 
 import edu.fit.cs.computernetworks.model.Address;
 import edu.fit.cs.computernetworks.topology.Host;
-import edu.fit.cs.computernetworks.topology.Node;
 import edu.fit.cs.computernetworks.topology.Topology;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
-	private final SimpleDateFormat formatter = new SimpleDateFormat("MMddyyyy-hhmmss");
+	private int receiveIndex = 0;
 	
 	public NetworkHost(final Topology topology, final Host descriptor) {
 		super(topology, descriptor);
@@ -32,11 +29,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 		}
 		
 		final ByteBuffer buffer = ByteBuffer.wrap(assemble);
-		final String mac = topology.arpResolve(addr.getSourceAddress());
-		final AbstractNetworkNode<? extends Node> node = topology.machineFor(mac);
-		final String hostname = node.descriptor.id;
-		
-		final String filename = format("%s-%s.bin", hostname, formatter.format(new Date()));
+		final String filename = format("file-%d.bin", receiveIndex++);
 		final File outputFile = new File(receivedDir, filename);
 		
 		try {

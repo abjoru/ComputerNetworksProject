@@ -15,7 +15,7 @@ public abstract class AbstractNetworkNode<T extends Node> {
 		RECEIVE, SEND
 	}
 	
-	private int ident = 0;
+	protected int ident = 0;
 	
 	protected final T descriptor;
 	protected final Topology topology;
@@ -37,7 +37,9 @@ public abstract class AbstractNetworkNode<T extends Node> {
 		case SEND: {
 			logger.log("network-layer send");
 			final byte[] srcMac = getLocalMAC(addr.getSourceAddress());
-			final byte[] destMac = NetUtils.macToByteArray(topology.arpResolve(addr.getDestinationAddress()));
+			final byte[] destIp = NetUtils.intIpToByteArray(addr.destAddressToInt());
+			final byte[] nextHop = descriptor.nextHopTo(destIp);
+			final byte[] destMac = NetUtils.macToByteArray(topology.arpResolve(nextHop));
 			final IPPacket pkg = new IPPacket(ident++, addr.sourceAddressToInt(), addr.destAddressToInt());
 			
 			pkg.setData(payload);

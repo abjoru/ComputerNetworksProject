@@ -28,7 +28,6 @@ public class TopologyTest {
 		Assert.assertEquals("255.255.255.0", a.mask);
 		Assert.assertEquals("00:B0:D0:86:BB:F7", a.mac);
 		Assert.assertEquals(1400, a.mtu);
-		Assert.assertEquals(1, a.getLinks().size());
 	}
 	
 	@Test

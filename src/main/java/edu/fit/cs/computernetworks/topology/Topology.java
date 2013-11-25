@@ -63,6 +63,28 @@ public class Topology {
 		return null;
 	}
 	
+	public String arpResolve(final byte[] ipAddress) {
+		for (final MACTableEntry e : macTable) {
+			final byte[] eIp = NetUtils.ipToByteArray(e.ip);
+			if (Arrays.equals(eIp, ipAddress)) {
+				return e.mac;
+			}
+		}
+		
+		return null;
+	}
+	
+	public String arpResolve(final int ipAddress) {
+		for (final MACTableEntry e : macTable) {
+			final byte[] entryIp = NetUtils.ipToByteArray(e.ip);
+			if (NetUtils.byteArrayIpToInt(entryIp) == ipAddress) {
+				return e.mac;
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * TODO find better name of method
 	 * 

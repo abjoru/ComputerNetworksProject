@@ -15,6 +15,11 @@ public class NetUtils {
 		}
 	}
 	
+	public static int ipToInt(final String ip) {
+		final byte[] bytes = ipToByteArray(ip);
+		return byteArrayIpToInt(bytes);
+	}
+	
 	public static String intIPToString(final int ip) {
 		try {
 			final InetAddress address = InetAddress.getByAddress(intIpToByteArray(ip));

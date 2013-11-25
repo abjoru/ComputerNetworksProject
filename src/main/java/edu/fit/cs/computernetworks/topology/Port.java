@@ -31,4 +31,11 @@ public class Port {
 	public boolean matches(byte[] networkAddr) {
 		return Arrays.equals(networkAddr, toNetworkAddress());
 	}
+	
+	public boolean machesDestinationIP(final int destIP) {
+		final byte[] ipAddr = NetUtils.intIpToByteArray(destIP);
+		final byte[] maskBytes = NetUtils.ipToByteArray(mask);
+		final byte[] netAddr = NetUtils.networkAddress(ipAddr, maskBytes);
+		return matches(netAddr);
+	}
 }
