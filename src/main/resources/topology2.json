@@ -7,7 +7,6 @@
 		"mac": "00:B0:D0:86:BB:F7",
 		"mtu": 1400,
 		"gateway": "10.10.20.2",
-		"folder": "/tmp/A",
 		"routing": [
 			{"network": "192.168.25/24", "nextHop": "10.10.20.2"}
 		]
@@ -19,7 +18,6 @@
 		"mac": "00:B0:D0:86:F7:BB",
 		"mtu": 1400,
 		"gateway": "192.168.25.10",
-		"folder": "/tmp/B",
 		"routing": [
 			{"network": "192.168.25.15", "nextHop": "192.168.25.15"},
 			{"network": "10.10.20/24", "nextHop": "192.168.25.10"}
@@ -32,7 +30,6 @@
 		"mac": "00:B0:D0:F7:86:BB",
 		"mtu": 1400,
 		"gateway": "192.168.25.10",
-		"folder": "/tmp/C",
 		"routing": [
 			{"network": "192.168.25.20", "nextHop": "192.168.25.20"},
 			{"network": "10.10.20/24", "nextHop": "192.168.25.10"}

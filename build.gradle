@@ -1,5 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'application'
+
+mainClassName = 'edu.fit.cs.computernetworks.Simulator'
 
 group = 'edu.fit.cs.computernetworks'
 version = '1.0'
@@ -22,4 +25,10 @@ dependencies {
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '1.8'
+}
+
+run {
+	if (project.hasProperty("rootPath")) {
+		args rootPath
+	}
 }

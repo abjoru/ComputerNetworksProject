@@ -2,7 +2,7 @@ package edu.fit.cs.computernetworks.topology;
 
 import java.util.Arrays;
 
-import edu.fit.cs.computernetworks.utils.IPUtils;
+import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class Port {
 
@@ -23,9 +23,9 @@ public class Port {
 	}
 	
 	public byte[] toNetworkAddress() {
-		byte[] ipBytes = IPUtils.ipToByteArray(ip);
-		byte[] maskBytes = IPUtils.ipToByteArray(mask);
-		return IPUtils.networkAddress(ipBytes, maskBytes);
+		byte[] ipBytes = NetUtils.ipToByteArray(ip);
+		byte[] maskBytes = NetUtils.ipToByteArray(mask);
+		return NetUtils.networkAddress(ipBytes, maskBytes);
 	}
 
 	public boolean matches(byte[] networkAddr) {

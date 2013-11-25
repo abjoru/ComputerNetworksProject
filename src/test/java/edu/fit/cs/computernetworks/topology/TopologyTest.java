@@ -46,7 +46,6 @@ public class TopologyTest {
 		Assert.assertEquals("00:B0:D0:86:BB:F7", a.mac);
 		Assert.assertEquals(1400, a.mtu);
 		Assert.assertEquals("10.10.20.2", a.gateway);
-		Assert.assertEquals("/tmp/A", a.folder);
 		
 		byte[] networkAddress = a.routing.get(0).networkAddress();
 		Assert.assertEquals(192, networkAddress[0] & 0xff);

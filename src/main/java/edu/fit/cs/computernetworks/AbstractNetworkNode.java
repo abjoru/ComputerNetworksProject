@@ -1,11 +1,13 @@
 package edu.fit.cs.computernetworks;
 
 import edu.fit.cs.computernetworks.model.Address;
-import edu.fit.cs.computernetworks.model.Frame;
+import edu.fit.cs.computernetworks.model.EthernetFrame;
 import edu.fit.cs.computernetworks.model.IPPacket;
 import edu.fit.cs.computernetworks.topology.Node;
 import edu.fit.cs.computernetworks.topology.Topology;
+import edu.fit.cs.computernetworks.utils.NetUtils;
 import edu.fit.cs.computernetworks.utils.SimpleLogger;
+import edu.fit.cs.computernetworks.utils.Tuple;
 
 public abstract class AbstractNetworkNode<T extends Node> {
 	
@@ -18,65 +20,89 @@ public abstract class AbstractNetworkNode<T extends Node> {
 	protected final T descriptor;
 	protected final Topology topology;
 	
-	private SimpleLogger logger = new SimpleLogger("Some logger");
+	protected final SimpleLogger logger;
 	
 	public AbstractNetworkNode(final Topology topo, final T descriptor) {
 		this.descriptor = descriptor;
 		this.topology = topo;
+		this.logger = new SimpleLogger(descriptor.id);
 	}
 	
-	public  void networkLayer(final byte[] msg, final Transmit transmit, final Address addr) {
-		
-	}
+	public abstract int getLocalMTU(final String localIp);
+	public abstract byte[] getLocalMAC(final String localIp);
+	public abstract void transport(final byte[] payload, final Transmit transmit, final Address addr);
 	
-	public abstract int mtu(final String localIp);
-	
-	// TODO move ippkg up
-	public void linkLayer(final byte[] message, final Transmit transmit, final Address addr) {
+	public  void networkLayer(final byte[] payload, final Transmit transmit, final Address addr) {
 		switch (transmit) {
-		case SEND:
-			// Fragment message and deliver to physical layer
-			final String destMac = topology.arpResolve(addr.getDestinationAddress());
+		case SEND: {
+			logger.log("network-layer send");
+			final byte[] srcMac = getLocalMAC(addr.getSourceAddress());
+			final byte[] destMac = NetUtils.macToByteArray(topology.arpResolve(addr.getDestinationAddress()));
+			final IPPacket pkg = new IPPacket(ident++, addr.sourceAddressToInt(), addr.destAddressToInt());
 			
-			if (mtu(addr.getSourceAddress()) < message.length) {
-				// TODO fragment message
-			} else {
-				final IPPacket pkg = new IPPacket(ident++, addr.sourceAddressToInt(), addr.destAddressToInt());
-				pkg.setData(message);
-				physicalLayer(pkg.toByteArray(), transmit, destMac);
-			}
+			pkg.setData(payload);
+			linkLayer(pkg.toByteArray(), transmit, Tuple.of(srcMac, destMac));
 			
 			break;
-		case RECEIVE:
-			final IPPacket pkg = IPPacket.fromByteArray(message);
+		}
+		case RECEIVE: {
+			logger.log("network-layer receive");
+			final IPPacket pkg = IPPacket.fromByteArray(payload);
 			// TODO error correction/detection?
 			final byte[] data = pkg.getData();
+			final String sourceIPAddress = NetUtils.intIPToString(pkg.getSourceIPAddress());
+			final String destIPAddress = NetUtils.intIPToString(pkg.getDestIPAddress());
 			
-			networkLayer(data, transmit, null);
+			transport(data, transmit, new Address(sourceIPAddress, destIPAddress));
+			
+			//networkLayer(data, transmit, new Address(sourceIPAddress, destIPAddress));
 			
 			break;
+		}
 		default: // no-op
 		}
 	}
 	
-	// TODO move ethernet frame up
-	public void physicalLayer(final byte[] packet, final Transmit transmit, final String macAddr) {
+	public void linkLayer(final byte[] payload, final Transmit transmit, final Tuple<byte[], byte[]> macAddresses) {
 		switch (transmit) {
 		case SEND:
-			logger.log("Sending message on physical layer");
-			final Frame frame = new Frame();
-			frame.setPayload(packet);
+			logger.log("link-layer send");
+			final byte[] srcMac = macAddresses._1;
+			final byte[] destMac = macAddresses._2;
+			final EthernetFrame destFrame = new EthernetFrame(srcMac, destMac);
 			
-			// Find actual machine from MAC address and deliver packet
-			final AbstractNetworkNode<? extends Node> nextHop = topology.machineFor(macAddr);
-			nextHop.physicalLayer(frame.toByteArray(), Transmit.RECEIVE, null);
+			destFrame.setPayload(payload);
+			physicalLayer(destFrame.toByteArray(), transmit, destMac);
+			
 			break;
 		case RECEIVE:
-			final Frame frameRecevied = Frame.from(packet);
-			// TODO checksum
+			logger.log("link-layer receive");
+			final EthernetFrame srcFrame = EthernetFrame.from(payload);
+			final int crc = srcFrame.getCrc32();
+			if (!srcFrame.validate(crc)) {
+				logger.error("CRC check failed");
+			}
 			
+			// Deliver payload to next layer
+			networkLayer(srcFrame.getPayload(), transmit, null);
+			
+			break;
+		}
+	}
+	
+	public void physicalLayer(final byte[] payload, final Transmit transmit, final byte[] macAddr) {
+		switch (transmit) {
+		case SEND:
+			logger.log("physical-layer send");
+			final AbstractNetworkNode<? extends Node> nextHop = topology.machineFor(macAddr);
+			nextHop.physicalLayer(payload, Transmit.RECEIVE, null);
+			
+			break;
+		case RECEIVE:
+			logger.log("physical-layer receive");
 			// Just send it on to the link-layer
-			linkLayer(frameRecevied.getPayload(), transmit, null);
+			linkLayer(payload, transmit, null);
+			
 			break;
 		default: // no-op
 		}

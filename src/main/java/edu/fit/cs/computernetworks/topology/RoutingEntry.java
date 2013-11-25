@@ -3,7 +3,7 @@ package edu.fit.cs.computernetworks.topology;
 import java.util.Arrays;
 import java.util.BitSet;
 
-import edu.fit.cs.computernetworks.utils.IPUtils;
+import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class RoutingEntry {
 	public String network;
@@ -28,7 +28,7 @@ public class RoutingEntry {
 	public byte[] networkAddress() {
 		final String[] segments = network.split("/");
 		if (segments.length == 1) {
-			return IPUtils.ipToByteArray(network);
+			return NetUtils.ipToByteArray(network);
 		}
 
 		final int cidr = Integer.valueOf(segments[1]);
@@ -52,6 +52,6 @@ public class RoutingEntry {
 			System.arraycopy(old, 0, mask, 0, old.length);
 		}
 		
-		return IPUtils.networkAddress(netAddr, mask);
+		return NetUtils.networkAddress(netAddr, mask);
 	}
 }

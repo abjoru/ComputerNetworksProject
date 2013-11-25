@@ -7,3 +7,9 @@
 
 /bin
 /build
+
+.gradle
+
+.gradle/1.8/taskArtifacts/fileSnapshots.bin
+
+.gradle/1.8/taskArtifacts/taskArtifacts.bin

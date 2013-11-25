@@ -1,8 +1,10 @@
 package edu.fit.cs.computernetworks;
 
+import edu.fit.cs.computernetworks.model.Address;
 import edu.fit.cs.computernetworks.topology.Port;
 import edu.fit.cs.computernetworks.topology.Router;
 import edu.fit.cs.computernetworks.topology.Topology;
+import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class NetworkRouter extends AbstractNetworkNode<Router> {
 	
@@ -12,9 +14,15 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 		super(topology, descriptor);
 	}
 	
+	@Override
+	public void transport(final byte[] payload, final Transmit transmit, final Address addr) {
+		// no-op
+		logger.error("TRANSPORT WAS CALLED ON A ROUTER!!");
+	}
+	
 
 	@Override
-	public int mtu(final String localIp) {
+	public int getLocalMTU(final String localIp) {
 		for (final Port port : descriptor.ports) {
 			if (port.ip.equals(localIp)) {
 				return port.mtu;
@@ -22,6 +30,17 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 		}
 		
 		return DEFAULT_MTU;
+	}
+	
+	@Override
+	public byte[] getLocalMAC(String localIp) {
+		for (final Port port : descriptor.ports) {
+			if (port.ip.equals(localIp)) {
+				return NetUtils.macToByteArray(port.mac);
+			}
+		}
+		
+		return null;
 	}
 
 }

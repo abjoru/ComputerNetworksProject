@@ -1,5 +1,8 @@
 package edu.fit.cs.computernetworks.topology;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.fit.cs.computernetworks.AbstractNetworkNode;
 import edu.fit.cs.computernetworks.NetworkHost;
 import edu.fit.cs.computernetworks.NetworkRouter;
+import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class Topology {
 	
@@ -15,7 +19,15 @@ public class Topology {
 	public List<MACTableEntry> macTable;
 	
 	@JsonIgnore
-	private Map<String, AbstractNetworkNode<? extends Node>> arpTable; 
+	public List<Thread> threads;
+	
+	@JsonIgnore
+	private Map<String, AbstractNetworkNode<? extends Node>> arpTable;
+	
+	public Topology() {
+		this.threads = new ArrayList<>();
+		this.arpTable = new HashMap<String, AbstractNetworkNode<? extends Node>>();
+	}
 
 	/**
 	 * Simulates a host name resolution. Translate a given hostname into
@@ -61,6 +73,16 @@ public class Topology {
 		return arpTable.get(macAddress);
 	}
 	
+	public AbstractNetworkNode<? extends Node> machineFor(final byte[] macAddress) {
+		for (final String mac : arpTable.keySet()) {
+			if (Arrays.equals(NetUtils.macToByteArray(mac), macAddress)) {
+				return arpTable.get(mac);
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Builds the ARP table, meaning that each network node is created and
 	 * placed in the table. 
@@ -69,16 +91,27 @@ public class Topology {
 	 * monitor folder for them..
 	 */
 	public void buildARP() {
+		
 		for (final Node node : nodes) {
 			if (node instanceof Host) {
 				final Host host = (Host) node;
-				arpTable.put(host.mac, new NetworkHost(this, host));
+				final NetworkHost hostNode = new NetworkHost(this, host);
+				threads.add(new Thread(hostNode));
+				arpTable.put(host.mac, hostNode);
 			} else if (node instanceof Router) {
 				final Router router = (Router) node;
 				final NetworkRouter nRouter = new NetworkRouter(this, router);
 				for (final Port port : router.ports) {
 					arpTable.put(port.mac, nRouter);
 				}
+			}
+		}
+	}
+	
+	public void setRootPath(final String path) {
+		for (final Node node : nodes) {
+			if (node instanceof Host) {
+				((Host) node).rootPath = path;
 			}
 		}
 	}
