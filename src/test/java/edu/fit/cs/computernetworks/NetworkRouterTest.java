@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import edu.fit.cs.computernetworks.AbstractNetworkNode.Transmit;
-import edu.fit.cs.computernetworks.model.Address;
 import edu.fit.cs.computernetworks.model.EthernetFrame;
 import edu.fit.cs.computernetworks.model.IPPacket;
 import edu.fit.cs.computernetworks.topology.Port;
@@ -48,12 +47,14 @@ public class NetworkRouterTest {
 
 		byte[] srcMac = NetUtils.macToByteArray("00:B0:D0:86:BB:F7");
 		byte[] destMac = NetUtils.macToByteArray("B0:00:D0:86:BB:F7");
-		when(topo.arpResolve(eq("10.0.0.1"))).thenReturn("00:B0:D0:86:BB:F7");
-		when(topo.arpResolve(eq("10.0.0.2"))).thenReturn("B0:00:D0:86:BB:F7");
+		when(topo.arpResolve(eq(NetUtils.ipToInt("10.0.0.1")))).thenReturn("00:B0:D0:86:BB:F7");
+		when(topo.arpResolve(eq(NetUtils.ipToInt("10.0.0.2")))).thenReturn("B0:00:D0:86:BB:F7");
 		when(topo.machineFor(eq(srcMac))).thenReturn((AbstractNetworkNode) router);
 		when(topo.machineFor(eq(destMac))).thenReturn((AbstractNetworkNode) dest);
 
-		router.networkLayer("This is the payload".getBytes(), Transmit.SEND, new Address("10.0.0.1", "10.0.0.2"));
+		IPPacket sendPkg = new IPPacket(0, NetUtils.ipToInt("10.0.0.1"), NetUtils.ipToInt("10.0.0.2"));
+		sendPkg.setData("This is the payload".getBytes());
+		router.networkLayer(sendPkg.toByteArray(), Transmit.RECEIVE, null);
 		
 		ArgumentCaptor<byte[]> pkg = ArgumentCaptor.forClass(byte[].class);
 		verify(dest).physicalLayer(pkg.capture(), eq(Transmit.RECEIVE), isNull(byte[].class));
