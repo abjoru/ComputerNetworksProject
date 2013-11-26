@@ -5,6 +5,7 @@ import edu.fit.cs.computernetworks.model.EthernetFrame;
 import edu.fit.cs.computernetworks.model.IPPacket;
 import edu.fit.cs.computernetworks.topology.Node;
 import edu.fit.cs.computernetworks.topology.Topology;
+import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 import edu.fit.cs.computernetworks.utils.SimpleLogger;
 import edu.fit.cs.computernetworks.utils.Tuple;
@@ -28,21 +29,23 @@ public abstract class AbstractNetworkNode<T extends Node> {
 		this.logger = new SimpleLogger(descriptor.id);
 	}
 	
-	public abstract int getLocalMTU(final String localIp);
-	public abstract byte[] getLocalMAC(final String localIp);
+	public abstract int getLocalMTU(final IP localIp);
+	public abstract byte[] getLocalMAC(final IP localIp);
 	public abstract void transport(final byte[] payload, final Transmit transmit, final Address addr);
 	
 	public  void networkLayer(final byte[] payload, final Transmit transmit, final Address addr) {
 		switch (transmit) {
 		case SEND: {
 			logger.log("network-layer send");
-			final byte[] srcMac = getLocalMAC(addr.getSourceAddress());
-			final byte[] destIp = NetUtils.intIpToByteArray(addr.destAddressToInt());
-			final byte[] nextHop = descriptor.nextHopTo(destIp);
+			final IP source = addr.getSourceAddress();
+			final IP destination = addr.getDestinationAddress();
+			final IP nextHop = descriptor.nextHopTo(destination);
+			final byte[] srcMac = getLocalMAC(source);
 			final byte[] destMac = NetUtils.macToByteArray(topology.arpResolve(nextHop));
-			final IPPacket pkg = new IPPacket(ident++, addr.sourceAddressToInt(), addr.destAddressToInt());
 			
+			final IPPacket pkg = new IPPacket(ident++, source.toInt(), destination.toInt());
 			pkg.setData(payload);
+			
 			linkLayer(pkg.toByteArray(), transmit, Tuple.of(srcMac, destMac));
 			
 			break;
@@ -52,10 +55,10 @@ public abstract class AbstractNetworkNode<T extends Node> {
 			final IPPacket pkg = IPPacket.fromByteArray(payload);
 			// TODO error correction/detection?
 			final byte[] data = pkg.getData();
-			final String sourceIPAddress = NetUtils.intIPToString(pkg.getSourceIPAddress());
-			final String destIPAddress = NetUtils.intIPToString(pkg.getDestIPAddress());
+			final IP sourceIPAddress = NetUtils.wrap(pkg.getSourceIPAddress());
+			final IP destIPAddress = NetUtils.wrap(pkg.getDestIPAddress());
 			
-			transport(data, transmit, new Address(sourceIPAddress, destIPAddress));
+			transport(data, transmit, new Address(sourceIPAddress.toString(), destIPAddress.toString()));
 			
 			//networkLayer(data, transmit, new Address(sourceIPAddress, destIPAddress));
 			

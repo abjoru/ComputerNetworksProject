@@ -1,5 +1,6 @@
 package edu.fit.cs.computernetworks.model;
 
+import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class Address {
@@ -10,23 +11,13 @@ public class Address {
 		this.sourceIp = source;
 		this.destIp = dest;
 	}
-
-	public int sourceAddressToInt() {
-		final byte[] bip = NetUtils.ipToByteArray(sourceIp);
-		return NetUtils.byteArrayIpToInt(bip);
-	}
-
-	public int destAddressToInt() {
-		final byte[] bip = NetUtils.ipToByteArray(destIp);
-		return NetUtils.byteArrayIpToInt(bip);
-	}
 	
-	public String getSourceAddress() {
-		return sourceIp;
+	public IP getSourceAddress() {
+		return NetUtils.wrap(sourceIp);
 	}
 
-	public String getDestinationAddress() {
-		return destIp;
+	public IP getDestinationAddress() {
+		return NetUtils.wrap(destIp);
 	}
 
 }

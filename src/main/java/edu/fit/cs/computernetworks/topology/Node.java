@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 
+import edu.fit.cs.computernetworks.utils.IP;
+
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "type")
 @JsonSubTypes({
 	@Type(name="host", value=Host.class),
@@ -18,6 +20,6 @@ public abstract class Node {
 
 	public List<RoutingEntry> routing;
 	
-	public abstract byte[] nextHopTo(final byte[] destIP);
+	public abstract IP nextHopTo(final IP destIP);
 	
 }

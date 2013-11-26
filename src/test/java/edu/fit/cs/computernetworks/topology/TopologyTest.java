@@ -10,6 +10,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.fit.cs.computernetworks.utils.IP;
+
 public class TopologyTest {
 	private URL path = getClass().getResource("/topology2.json");
 	
@@ -29,7 +31,8 @@ public class TopologyTest {
 		Assert.assertEquals(1400, a.mtu);
 		Assert.assertEquals("10.10.20.2", a.gateway);
 		
-		byte[] networkAddress = a.routing.get(0).networkAddress();
+		IP netAddr = a.routing.get(0).networkAddress();
+		byte[] networkAddress = netAddr.toByteArray();
 		Assert.assertEquals(192, networkAddress[0] & 0xff);
 		Assert.assertEquals(168, networkAddress[1] & 0xff);
 		Assert.assertEquals(25, networkAddress[2] & 0xff);

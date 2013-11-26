@@ -1,16 +1,16 @@
 package edu.fit.cs.computernetworks.topology;
 
-import java.util.Arrays;
 import java.util.List;
 
+import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class Router extends Node {
 	public List<Port> ports;
 	
-	public Port getPortForNetwork(final byte[] networkAddr) {
+	public Port getPortForNetwork(final IP networkAddr) {
 		for (final Port p : ports) {
-			if (Arrays.equals(networkAddr, p.toNetworkAddress())) {
+			if (networkAddr.equals(p.toNetworkAddress())) {
 				return p;
 			}
 		}
@@ -18,7 +18,7 @@ public class Router extends Node {
 		return null;
 	}
 	
-	public Port getPortForDestinationIP(final int destIP) {
+	public Port getPortForDestinationIP(final IP destIP) {
 		for (final Port p : ports) {
 			if (p.machesDestinationIP(destIP)) {
 				return p;
@@ -29,12 +29,12 @@ public class Router extends Node {
 	}
 	
 	@Override
-	public byte[] nextHopTo(byte[] destIP) {
+	public IP nextHopTo(final IP destIP) {
 		for (final Port p : ports) {
-			final byte[] netAddr = NetUtils.networkAddress(destIP, NetUtils.ipToByteArray(p.mask));
+			final IP netAddr = NetUtils.networkAddress(destIP, NetUtils.wrap(p.mask));
 			for (final RoutingEntry re : routing) {
-				if (Arrays.equals(netAddr, re.networkAddress())) {
-					return NetUtils.ipToByteArray(re.nextHop);
+				if (netAddr.equals(re.networkAddress())) {
+					return NetUtils.wrap(re.nextHop);
 				}
 			}
 		}

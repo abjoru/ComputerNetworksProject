@@ -5,6 +5,7 @@ import edu.fit.cs.computernetworks.model.IPPacket;
 import edu.fit.cs.computernetworks.topology.Port;
 import edu.fit.cs.computernetworks.topology.Router;
 import edu.fit.cs.computernetworks.topology.Topology;
+import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 import edu.fit.cs.computernetworks.utils.Tuple;
 
@@ -27,15 +28,16 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 		assert transmit == Transmit.RECEIVE;
 		
 		final IPPacket pkg = IPPacket.fromByteArray(payload);
-		final Port interf = descriptor.getPortForDestinationIP(pkg.getDestIPAddress());
+		final IP destIp = NetUtils.wrap(pkg.getDestIPAddress());
+		final Port interf = descriptor.getPortForDestinationIP(destIp);
 		if (interf == null) {
-			logger.log("Unable to locate interface for destination IP: " + NetUtils.intIPToString(pkg.getDestIPAddress()));
+			logger.log("Unable to locate interface for destination IP: " + destIp.toString());
 			return;
 		}
 		
-		final byte[] srcMac = getLocalMAC(interf.ip);
-		final byte[] destMac = NetUtils.macToByteArray(topology.arpResolve(pkg.getDestIPAddress()));
-		final IPPacket newPkg = new IPPacket(ident++, NetUtils.ipToInt(interf.ip), pkg.getDestIPAddress());
+		final byte[] srcMac = getLocalMAC(NetUtils.wrap(interf.ip));
+		final byte[] destMac = NetUtils.macToByteArray(topology.arpResolve(destIp));
+		final IPPacket newPkg = new IPPacket(ident++, NetUtils.wrap(interf.ip).toInt(), destIp.toInt());
 		
 		newPkg.setData(pkg.getData());
 		
@@ -45,9 +47,9 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 	
 
 	@Override
-	public int getLocalMTU(final String localIp) {
+	public int getLocalMTU(final IP localIp) {
 		for (final Port port : descriptor.ports) {
-			if (port.ip.equals(localIp)) {
+			if (port.ip.equals(localIp.toString())) {
 				return port.mtu;
 			}
 		}
@@ -56,9 +58,9 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 	}
 	
 	@Override
-	public byte[] getLocalMAC(String localIp) {
+	public byte[] getLocalMAC(final IP localIp) {
 		for (final Port port : descriptor.ports) {
-			if (port.ip.equals(localIp)) {
+			if (port.ip.equals(localIp.toString())) {
 				return NetUtils.macToByteArray(port.mac);
 			}
 		}

@@ -59,7 +59,7 @@ public class IPPacketTest {
 		pkg.setProtocol((byte) 4);
 		pkg.setHeaderChecksum(12345);
 		pkg.setSourceIPAddress(234532);
-		pkg.setDestIPAddress(NetUtils.byteArrayIpToInt("10.0.0.1".getBytes()));
+		pkg.setDestIPAddress(NetUtils.wrap("10.0.0.1").toInt());
 		pkg.setData("This is some data".getBytes());
 		
 		//13, 14, 15, 16

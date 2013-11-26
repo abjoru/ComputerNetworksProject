@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import edu.fit.cs.computernetworks.model.Address;
 import edu.fit.cs.computernetworks.topology.Host;
 import edu.fit.cs.computernetworks.topology.Topology;
+import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
@@ -107,12 +108,12 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 	}
 
 	@Override
-	public int getLocalMTU(final String localIp) {
+	public int getLocalMTU(final IP localIp) {
 		return descriptor.mtu;
 	}
 	
 	@Override
-	public byte[] getLocalMAC(String localIp) {
+	public byte[] getLocalMAC(final IP localIp) {
 		return NetUtils.macToByteArray(descriptor.mac);
 	}
 

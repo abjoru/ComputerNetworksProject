@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.fit.cs.computernetworks.AbstractNetworkNode;
 import edu.fit.cs.computernetworks.NetworkHost;
 import edu.fit.cs.computernetworks.NetworkRouter;
+import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class Topology {
@@ -53,31 +54,9 @@ public class Topology {
 	 * @param ipAddress
 	 * @return
 	 */
-	public String arpResolve(final String ipAddress) {
+	public String arpResolve(final IP ipAddress) {
 		for (final MACTableEntry e : macTable) {
-			if (e.ip.equals(ipAddress)) {
-				return e.mac;
-			}
-		}
-		
-		return null;
-	}
-	
-	public String arpResolve(final byte[] ipAddress) {
-		for (final MACTableEntry e : macTable) {
-			final byte[] eIp = NetUtils.ipToByteArray(e.ip);
-			if (Arrays.equals(eIp, ipAddress)) {
-				return e.mac;
-			}
-		}
-		
-		return null;
-	}
-	
-	public String arpResolve(final int ipAddress) {
-		for (final MACTableEntry e : macTable) {
-			final byte[] entryIp = NetUtils.ipToByteArray(e.ip);
-			if (NetUtils.byteArrayIpToInt(entryIp) == ipAddress) {
+			if (e.ip.equals(ipAddress.toString())) {
 				return e.mac;
 			}
 		}

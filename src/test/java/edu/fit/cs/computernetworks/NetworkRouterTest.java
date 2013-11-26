@@ -47,12 +47,12 @@ public class NetworkRouterTest {
 
 		byte[] srcMac = NetUtils.macToByteArray("00:B0:D0:86:BB:F7");
 		byte[] destMac = NetUtils.macToByteArray("B0:00:D0:86:BB:F7");
-		when(topo.arpResolve(eq(NetUtils.ipToInt("10.0.0.1")))).thenReturn("00:B0:D0:86:BB:F7");
-		when(topo.arpResolve(eq(NetUtils.ipToInt("10.0.0.2")))).thenReturn("B0:00:D0:86:BB:F7");
+		when(topo.arpResolve(eq(NetUtils.wrap("10.0.0.1")))).thenReturn("00:B0:D0:86:BB:F7");
+		when(topo.arpResolve(eq(NetUtils.wrap("10.0.0.2")))).thenReturn("B0:00:D0:86:BB:F7");
 		when(topo.machineFor(eq(srcMac))).thenReturn((AbstractNetworkNode) router);
 		when(topo.machineFor(eq(destMac))).thenReturn((AbstractNetworkNode) dest);
 
-		IPPacket sendPkg = new IPPacket(0, NetUtils.ipToInt("10.0.0.1"), NetUtils.ipToInt("10.0.0.2"));
+		IPPacket sendPkg = new IPPacket(0, NetUtils.wrap("10.0.0.1").toInt(), NetUtils.wrap("10.0.0.2").toInt());
 		sendPkg.setData("This is the payload".getBytes());
 		router.networkLayer(sendPkg.toByteArray(), Transmit.RECEIVE, null);
 		
