@@ -9,7 +9,4 @@
 /build
 
 /.gradle
-
-.gradle/1.8/taskArtifacts/cache.properties.lock
-
-.gradle/1.8/taskArtifacts/outputFileStates.bin
+/docs/.texpadtmp/
