@@ -1,30 +1,30 @@
 package edu.fit.cs.computernetworks.model;
 
+import static edu.fit.cs.computernetworks.utils.ErrorCheckUtils.checksum;
+
 import java.nio.ByteBuffer;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-public class IPPacket implements OSIPacket {
-	private static final long serialVersionUID = 1L;
-
-	static final int HEADER_SIZE = 20; // in bytes
+public class IPPacket {
+	public static final int HEADER_SIZE = 20; // in bytes
 
 	private byte version = 4; // 1 nibble
 	private byte internetHeaderLength = HEADER_SIZE * 8 / 32; // 1 nibble
 	private byte differentiatedServices = 0; // 6 bits
 	private byte explicitCongestionNotification = 0; // 2 bits
-	private int totalLength; // 2 bytes
+	private int totalLength = HEADER_SIZE; // 2 bytes
 	private int identification; // 2 bytes
 	private byte flags = 0; // 3 bits
 	private int fragmentOffset = 0; // 13 bits
 	private byte timeToLive = 0; // 1 byte
 	private byte protocol = 6; // 1 byte (6 = TCP)
-	private int headerChecksum; // 2 bytes
+	private int headerChecksum = 0; // 2 bytes
 	private int sourceIPAddress; // 4 bytes
 	private int destIPAddress; // 4 bytes
 	// private int options; // variable, not implemented!
 	
-	private byte[] data;
+	private byte[] payload;
 	
 	IPPacket() {
 		// package protected default constructor
@@ -34,43 +34,11 @@ public class IPPacket implements OSIPacket {
 		this.identification = id;
 		this.sourceIPAddress = srcAddr;
 		this.destIPAddress = destAddr;
+		this.headerChecksum = checksum(getHeader());
 	}
 	
 	public byte getVersion() {
 		return version;
-	}
-	
-	public void setVersion(byte version) {
-		this.version = version;
-	}
-	
-	public byte getInternetHeaderLength() {
-		return internetHeaderLength;
-	}
-	
-	public byte getDifferentiatedServices() {
-		return differentiatedServices;
-	}
-	
-	public void setDifferentiatedServices(byte differentiatedServices) {
-		this.differentiatedServices = differentiatedServices;
-	}
-	
-	public byte getExplicitCongestionNotification() {
-		return explicitCongestionNotification;
-	}
-	
-	public void setExplicitCongestionNotification(
-			byte explicitCongestionNotification) {
-		this.explicitCongestionNotification = explicitCongestionNotification;
-	}
-	
-	public int getTotalLength() {
-		return totalLength;
-	}
-	
-	public void setTotalLength(int totalLength) {
-		this.totalLength = totalLength;
 	}
 	
 	public int getIdentification() {
@@ -105,20 +73,8 @@ public class IPPacket implements OSIPacket {
 		this.timeToLive = timeToLive;
 	}
 	
-	public byte getProtocol() {
-		return protocol;
-	}
-	
-	public void setProtocol(byte protocol) {
-		this.protocol = protocol;
-	}
-	
 	public int getHeaderChecksum() {
 		return headerChecksum;
-	}
-	
-	public void setHeaderChecksum(int headerChecksum) {
-		this.headerChecksum = headerChecksum;
 	}
 	
 	public int getSourceIPAddress() {
@@ -136,17 +92,28 @@ public class IPPacket implements OSIPacket {
 	public void setDestIPAddress(int destIPAddress) {
 		this.destIPAddress = destIPAddress;
 	}
+
+	public byte[] getPayload() {
+		return payload;
+	}
 	
-	@Override
+	public void setPayload(byte[] payload) {
+		this.payload = payload;
+	}
+	
+	public boolean validate(final int checksum) {
+		this.headerChecksum = 0;
+		final int check = checksum(getHeader());
+		return check == checksum;
+	}
+	
 	public byte[] getHeader() {
 		final ByteBuffer buff = ByteBuffer.allocate(HEADER_SIZE);
 		
 		if (totalLength == 0) {
-			totalLength = HEADER_SIZE + data.length;
+			totalLength = HEADER_SIZE + payload.length;
 		}
 		
-		// TODO calc checksum
-
 		buff.put((byte) ((version << 4) | internetHeaderLength));
 		buff.put((byte) ((differentiatedServices << 2) | explicitCongestionNotification));
 		buff.put((byte) ((totalLength << 16) >> 24));
@@ -171,16 +138,7 @@ public class IPPacket implements OSIPacket {
 		return buff.array();
 	}
 
-	@Override
-	public byte[] getData() {
-		return data;
-	}
-	
-	public void setData(byte[] data) {
-		this.data = data;
-	}
-
-	public static IPPacket fromByteArray(final byte[] msg) {
+	public static IPPacket from(final byte[] msg) {
 		final IPPacket pkg = new IPPacket();
 		final ByteBuffer buff = ByteBuffer.wrap(msg);
 
@@ -211,16 +169,15 @@ public class IPPacket implements OSIPacket {
 		pkg.sourceIPAddress = buff.getInt();
 		pkg.destIPAddress = buff.getInt();
 		
-		pkg.data = new byte[buff.remaining()];
-		buff.get(pkg.data);
+		pkg.payload = new byte[buff.remaining()];
+		buff.get(pkg.payload);
 
 		return pkg;
 	}
 
-	@Override
 	public byte[] toByteArray() {
 		final byte[] header = getHeader();
-		final byte[] data = getData();
+		final byte[] data = getPayload();
 		
 		return ArrayUtils.addAll(header, data);
 	}

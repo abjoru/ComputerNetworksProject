@@ -4,21 +4,46 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
+/**
+ * Simple utility class that encapsulates translation of a given IP
+ * to different formats.
+ * 
+ * @author Andreas Bjoru
+ *
+ */
 public class IP {
 	private final String wrappedIP;
 	
+	/**
+	 * Construct the type from a string representation.
+	 * 
+	 * @param ip
+	 */
 	public IP(final String ip) {
 		this.wrappedIP = ip;
 	}
 	
+	/**
+	 * Construct the type from an integer representation.
+	 * 
+	 * @param ip
+	 */
 	public IP(final int ip) {
 		this(toByteArray(ip));
 	}
 	
+	/**
+	 * Construct the type from a byte array representation.
+	 * 
+	 * @param ip
+	 */
 	public IP(final byte[] ip) {
 		this(toString(ip));
 	}
 	
+	/*
+	 * Internal conversion routine.
+	 */
 	private static String toString(final byte[] ip) {
 		try {
 			final InetAddress address = InetAddress.getByAddress(ip);
@@ -29,6 +54,9 @@ public class IP {
 		}
 	}
 	
+	/*
+	 * Internal conversion routine.
+	 */
 	private static byte[] toByteArray(final int ip) {
 		final ByteBuffer buff = ByteBuffer.allocate(4);
 		
@@ -40,11 +68,21 @@ public class IP {
 		return buff.array();
 	}
 	
+	/**
+	 * Returns this IP address as an integer.
+	 * 
+	 * @return
+	 */
 	public int toInt() {
 		final byte[] bytes = toByteArray();
 		return ByteBuffer.wrap(bytes).getInt();
 	}
 	
+	/**
+	 * Returns this IP as a byte array.
+	 * 
+	 * @return
+	 */
 	public byte[] toByteArray() {
 		try {
 			return InetAddress.getByName(wrappedIP).getAddress();
@@ -54,6 +92,9 @@ public class IP {
 		}
 	}
 	
+	/**
+	 * Return this IP as a string.
+	 */
 	@Override
 	public String toString() {
 		return wrappedIP;

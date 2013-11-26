@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
-public class FrameTest {
+public class EthernetFrameTest {
 	
 	@Test
 	public void toFromByteArray() {

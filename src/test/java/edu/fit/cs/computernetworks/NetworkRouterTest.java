@@ -53,7 +53,7 @@ public class NetworkRouterTest {
 		when(topo.machineFor(eq(destMac))).thenReturn((AbstractNetworkNode) dest);
 
 		IPPacket sendPkg = new IPPacket(0, NetUtils.wrap("10.0.0.1").toInt(), NetUtils.wrap("10.0.0.2").toInt());
-		sendPkg.setData("This is the payload".getBytes());
+		sendPkg.setPayload("This is the payload".getBytes());
 		router.networkLayer(sendPkg.toByteArray(), Transmit.RECEIVE, null);
 		
 		ArgumentCaptor<byte[]> pkg = ArgumentCaptor.forClass(byte[].class);
@@ -64,7 +64,7 @@ public class NetworkRouterTest {
 		
 		EthernetFrame frame = EthernetFrame.from(packet);
 		byte[] ipPkg = frame.getPayload();
-		byte[] payload = IPPacket.fromByteArray(ipPkg).getData();
+		byte[] payload = IPPacket.from(ipPkg).getPayload();
 		Assert.assertEquals("This is the payload", new String(payload));
 	}
 	
