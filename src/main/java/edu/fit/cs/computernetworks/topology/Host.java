@@ -32,10 +32,27 @@ public class Host extends Node {
 	
 	@Override
 	public IP nextHopTo(final IP destIP) {
-		final IP netAddr = NetUtils.networkAddress(destIP, NetUtils.wrap(mask));
+		final RoutingEntry directRoute = getDirectRoute(destIP);
+		if (directRoute == null) {
+			final IP netAddr = NetUtils.networkAddress(destIP, NetUtils.wrap(mask));
+			for (final RoutingEntry e : routing) {
+				final IP checkAddr = e.networkAddress();
+				if (netAddr.equals(checkAddr)) {
+					return NetUtils.wrap(e.nextHop);
+				}
+			}
+		} else {
+			return NetUtils.wrap(directRoute.nextHop);
+		}
+		
+		return null;
+	}
+	
+	private RoutingEntry getDirectRoute(final IP destIp) {
 		for (final RoutingEntry e : routing) {
-			if (netAddr.equals(e.networkAddress())) {
-				return NetUtils.wrap(e.nextHop);
+			final IP network = NetUtils.wrap(e.network);
+			if (network.equals(destIp)) {
+				return e;
 			}
 		}
 		
