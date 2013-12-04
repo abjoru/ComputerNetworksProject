@@ -7,18 +7,22 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 
 import edu.fit.cs.computernetworks.AbstractNetworkNode.Transmit;
+import edu.fit.cs.computernetworks.model.Address;
 import edu.fit.cs.computernetworks.model.EthernetFrame;
 import edu.fit.cs.computernetworks.model.IPPacket;
 import edu.fit.cs.computernetworks.topology.Port;
 import edu.fit.cs.computernetworks.topology.Router;
 import edu.fit.cs.computernetworks.topology.RoutingEntry;
 import edu.fit.cs.computernetworks.topology.Topology;
+import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class NetworkRouterTest {
@@ -51,13 +55,14 @@ public class NetworkRouterTest {
 		when(topo.arpResolve(eq(NetUtils.wrap("10.0.0.2")))).thenReturn("B0:00:D0:86:BB:F7");
 		when(topo.machineFor(eq(srcMac))).thenReturn((AbstractNetworkNode) router);
 		when(topo.machineFor(eq(destMac))).thenReturn((AbstractNetworkNode) dest);
+		when(topo.nodesForNetwork(Matchers.any(IP.class))).thenReturn(Arrays.asList((AbstractNetworkNode<?>)router, (AbstractNetworkNode<?>)dest));
 
 		IPPacket sendPkg = new IPPacket(0, NetUtils.wrap("10.0.0.1").toInt(), NetUtils.wrap("10.0.0.2").toInt());
 		sendPkg.setPayload("This is the payload".getBytes());
 		router.networkLayer(sendPkg.toByteArray(), Transmit.RECEIVE, null);
 		
 		ArgumentCaptor<byte[]> pkg = ArgumentCaptor.forClass(byte[].class);
-		verify(dest).physicalLayer(pkg.capture(), eq(Transmit.RECEIVE), isNull(byte[].class));
+		verify(dest).physicalLayer(pkg.capture(), eq(Transmit.RECEIVE), isNull(Address.class));
 		
 		byte[] packet = pkg.getValue();
 		Assert.assertNotNull(packet);

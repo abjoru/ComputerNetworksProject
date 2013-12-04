@@ -1,5 +1,7 @@
 package edu.fit.cs.computernetworks.utils;
 
+import static java.lang.String.format;
+
 public class SimpleLogger {
 	
 	private final String loggerName;
@@ -8,11 +10,15 @@ public class SimpleLogger {
 		this.loggerName = name;
 	}
 	
-	public void log(String message) {
+	public void log(final String message) {
 		System.out.printf("[%s] %s%n", loggerName, message);
 	}
 	
-	public void error(String message) {
+	public void log(final String pattern, final Object...args) {
+		log(format(pattern, args));
+	}
+	
+	public void error(final String message) {
 		System.err.printf("[%s] %s%n", loggerName, message);
 	}
 

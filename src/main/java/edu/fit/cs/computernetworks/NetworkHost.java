@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 
@@ -40,6 +41,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 			
 			try (final FileOutputStream out = new FileOutputStream(outputFile)) {
 				out.write(buffer.array());
+				logger.log("APPLICATION: wrote file '%s'", filename);
 			}
 		} catch (final IOException ex) {
 			ex.printStackTrace();
@@ -62,7 +64,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 	
 	@Override
 	public void run() {
-		logger.log(format("starting with observable directory: '%s'", descriptor.observable().getAbsolutePath()));
+		logger.log(format("APPLICATION: starting with observable directory: '%s'", descriptor.observable().getAbsolutePath()));
 		while (true) {
 			final String[] files = descriptor.observable().list(new FilenameFilter() {
 				
@@ -73,14 +75,14 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 			});
 			
 			if (files != null && files.length > 0) {
-				logger.log("new files discovered");
+				logger.log("APPLICATION: new files discovered");
 				for (final String name : files) {
 					final File f = new File(descriptor.observable(), name);
 					final String targetHostname = name.split("\\.")[0];
 					final Host resolved = (Host) topology.resolve(targetHostname);
 					
 					if (resolved == null) {
-						logger.error("Unable to resolve host! Deleting file...");
+						logger.error("APPLICATION: Unable to resolve host! Deleting file...");
 						f.delete();
 						continue;
 					}
@@ -89,7 +91,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 						final byte[] data = FileUtils.readFileToByteArray(f);
 						
 						f.delete();
-						logger.log("Data read, sending to transport layer...");
+						logger.log("APPLICATION: %s read, sending to transport layer...", f.getName());
 						transport(data, Transmit.SEND, new Address(descriptor.ip, resolved.ip));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -106,12 +108,42 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 			}
 		}		
 	}
+	
+	/* (non-Javadoc)
+	 * @see edu.fit.cs.computernetworks.AbstractNetworkNode#networkAddress(edu.fit.cs.computernetworks.utils.IP)
+	 */
+	@Override
+	public IP networkAddress(IP ifAddress) {
+		return descriptor.toNetworkAddress();
+	}
+	
+	/* (non-Javadoc)
+	 * @see edu.fit.cs.computernetworks.AbstractNetworkNode#matchesInterface(byte[])
+	 */
+	@Override
+	public boolean matchesInterface(byte[] macAddr) {
+		return Arrays.equals(macAddr, getLocalMAC(null));
+	}
+	
+	/* (non-Javadoc)
+	 * @see edu.fit.cs.computernetworks.AbstractNetworkNode#belongsToNetwork(edu.fit.cs.computernetworks.utils.IP)
+	 */
+	@Override
+	public boolean belongsToNetwork(IP networkAddr) {
+		return descriptor.matchesNetwork(networkAddr);
+	}
 
+	/* (non-Javadoc)
+	 * @see edu.fit.cs.computernetworks.AbstractNetworkNode#getLocalMTU(edu.fit.cs.computernetworks.utils.IP)
+	 */
 	@Override
 	public int getLocalMTU(final IP localIp) {
 		return descriptor.mtu;
 	}
 	
+	/* (non-Javadoc)
+	 * @see edu.fit.cs.computernetworks.AbstractNetworkNode#getLocalMAC(edu.fit.cs.computernetworks.utils.IP)
+	 */
 	@Override
 	public byte[] getLocalMAC(final IP localIp) {
 		return NetUtils.macToByteArray(descriptor.mac);
