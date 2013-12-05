@@ -89,10 +89,27 @@ public abstract class AbstractNetworkNode<T extends Node> {
 	/**
 	 * Transport Layer
 	 * 
+	 * <b>Sending payload</b>
+	 * <p>When sending a given payload, it slices the payload into many segments based on the payload size. 
+	 * First it will check the length of the payload to make sure it needs to be sliced to MTU's size or not.
+	 * If the payload size is more than the MTU's size then it will slice the segments considering the header length.
+	 * These segments has TCP header along with data. Source and destination ports are included in the header.
+	 * SYN and FIN flags are used to identify segments starting and ending point.
+	 * This payload will be sent to network layer for adding IP header and route this segment to right node.
+	 * Sending parameters would be {@network #networkLayer(byte[], Transmit, Address)} method.</p>
+	 * 
+	 * <b>Receiving payloads</b>
+	 * <p>When receiving a payload, this method will convert the payload into segments.
+	 * It will then extract the chechsum to make sure segment is valid, if it's not valid it drops. 
+	 * If not, it keeps accumulating the segments into a buffer. along with sequence number.
+	 * Then it will check for the FIN flag in the header to confirm that that's the last segment.
+	 * If it's not FIN (it must be SYN), then it keeps assembling the segments to build a complete payload.
+	 * Once the payload is built, it will be sent to application layer for creating a file in destination node.</p>
+	 * 
 	 * @param payload
 	 * @param transmit
-	 * @param srcPort
-	 * @param destPort
+	 * @param addr
+	 * 
 	 */
 	public abstract void transport(final byte[] payload, final Transmit transmit, final Address addr);
 	

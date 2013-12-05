@@ -66,10 +66,13 @@ The \texttt{physicalLayer(byte[], Transmit, Address)} method will send a given p
 The \texttt{linkLayer(byte[], Transmit, Address)} method will packet a given payload in an \texttt{EthernetFrame} along with the source and destination MAC addresses from the \texttt{Address} argument. The frame will then be handed down to the physical layer method to complete the sending responsibilities of the layer. When the link layer receives a packet it will first verify the cyclic redundancy check (CRC) sum of the packet. If this check fails, the packet will be dropped. The next check performed is the destination MAC address check which determines if the packet is actually for this node. If the destination MAC address matches the network node, then the payload of the packet is handed off to the layer above it. Otherwise, the packet is simply dropped since it is not addressed for this node.
 
 \subsection{Network hosts}
-fds
+The \texttt{transport(payload, transmit, addr)} method slices payload into segments while sending and assembles the segments when it receive the payload. When sending a given payload, it slices the payload into many segments based on the payload size. First it will check the length of the payload to make sure it needs to be sliced to MTU's size or not. If the payload size is more than the MTU's size then it will slice the segments considering the header length. These segments has TCP header along with data. Source and destination ports are included in the header. SYN and FIN flags are used to identify segments starting and ending point. This payload will be sent to network layer for adding IP header and route this segment to right node. Sending parameters would be \texttt{networkLayer(byte[], Transmit, Address)} method. \\
+
+When receiving a payload, this method will convert the payload into segments. It will then extract the chechsum to make sure segment is valid, if it's not valid it drops. If not, it keeps accumulating the segments into a buffer. along with sequence number. Then it will check for the FIN flag in the header to confirm that that's the last segment. If it's not FIN (it must be SYN), then it keeps assembling the segments to build a complete payload. Once the payload is built, it will be sent to application layer for creating a file in destination node.
+
 
 \subsection{Network routers}
-fds
+The functionality of the network layer is overridden for routers since they will just route packages to the next network or host. Similar to the inherited version of this method, it will start by verifying the IP header checksum. If the verification fails, the package is dropped. Otherwise, the correct network interface is found and the MAC address of that interface is used as the new source MAC address. The destination MAC address is then resolved through \texttt{Topology arpResolve(IP)},  and the payload is sent to the \texttt{linkLayer(byte[], edu.fit.cs.computernetworks.AbstractNetworkNode.Transmit, Address)} method if the router.
 
 \subsection{Topology}
 The topology for the network described by the assignment was fixed (see figure \ref{fig:topo}). In order to avoid having to hard-code information extracted from this topology (routing tables, MAC tables, etc), we decided to represent the topology in an external format as seen in appendix \ref{appendix:topology}. This will also allow us to change the topology of the network without having to change the implementation. Each node in the topology is represented by a corresponding node in the \textit{JSON} file including relevant information (see table below). Furthermore, the topology representation also contains the hardware address lookup table for the network.
@@ -109,7 +112,19 @@ The topology representation is mapped to corresponding Java classes using a 3rd-
 Basically how data flows between network nodes. Explain how the layer methods work..
 
 \section{Execution}
-Description of how to run the code
+This project is built on eclipse environment with some additional packages. So first we need to download and install these packages by following the given steps. \\  \\
+Windows Environment: \\
+1. Go to command prompt and navigate to the project's root location \\
+2. Execute this command: gradlew.bat eclipse \\
+3. The gradlew command is a wrapper around the gradle build tool and will download the binaries for the build tool before executing the task. \\
+4. When gradle finishes (i.e. eclipse project files have been generated), you can import the project in eclipse by selecting ‘import then existing project’ from the eclipse menus. \\ 
+5. Create sample folder to place the file to tansfer to different nodes. \\
+\\
+Unix Environment: \\
+1. Go to command prompt and navigate to the project's root location \\ 
+2. Execute this command: {gradlew eclipse} \\
+3. The gradlew command is a wrapper around the gradle build tool and will download the binaries for the build tool before executing the task. \\
+4. When gradle finishes (i.e. eclipse project files have been generated), you can import the project in eclipse by selecting ‘import -> existing project’ from the eclipse menus. \\ \\
 
 \newpage
 \appendix
