@@ -98,7 +98,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 			break;
 		}
 		case RECEIVE: {
-			logger.log("transport-layer receive");
+			//logger.log("TRANSPORT-LAYER: receive");
 			
 			// Reconstruct TCP segment and validate header
 			final TCPSegment seg = TCPSegment.from(payload);
@@ -109,10 +109,12 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 			}
 			
 			// Update the list with the segments
+			logger.log("TRANSPORT-LAYER: Adding Segment to buffer");
 			segBuffer.add(seg.getSeqNum(), seg);
 			
 			// Check: Make sure we have only one segment or many of them
 			if(seg.isFin()) {
+				logger.log("TRANSPORT-LAYER: Received last segment");
 				int size = 0;
 				// Construct the buffer
 				for(final TCPSegment s : segBuffer) {
@@ -124,7 +126,8 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 				for(final TCPSegment s : segBuffer) {
 					newPayload.put(s.getPayload());
 				}
-								
+				logger.log("TRANSPORT-LAYER: Assembling %d segments", segBuffer.size());
+				
 				// Clear the buffer
 				segBuffer.clear();
 				
