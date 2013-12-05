@@ -1,6 +1,9 @@
 package edu.fit.cs.computernetworks;
 
+import static java.lang.String.format;
+
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import edu.fit.cs.computernetworks.model.Address;
 import edu.fit.cs.computernetworks.model.EthernetFrame;
@@ -9,7 +12,6 @@ import edu.fit.cs.computernetworks.topology.Node;
 import edu.fit.cs.computernetworks.topology.Topology;
 import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
-import edu.fit.cs.computernetworks.utils.SimpleLogger;
 import edu.fit.cs.computernetworks.utils.Tuple;
 
 /**
@@ -29,13 +31,12 @@ public abstract class AbstractNetworkNode<T extends Node> {
 	protected final T descriptor;
 	protected final Topology topology;
 	
-	// shared logger
-	protected final SimpleLogger logger;
+	private final Logger logger;
 	
 	public AbstractNetworkNode(final Topology topo, final T descriptor) {
 		this.descriptor = descriptor;
 		this.topology = topo;
-		this.logger = new SimpleLogger(descriptor.id);
+		this.logger = Logger.getLogger(descriptor.id);
 	}
 	
 	/**
@@ -137,7 +138,7 @@ public abstract class AbstractNetworkNode<T extends Node> {
 			pkg.setPayload(payload);
 			
 			// Deliver to link-layer
-			logger.log("NETWORK-LAYER: send (IP header=%s)", Arrays.toString(pkg.getHeader()));
+			logger.info(format("Send (IP header=%s)", Arrays.toString(pkg.getHeader())));
 			linkLayer(pkg.toByteArray(), transmit, addr);
 			
 			break;
@@ -145,11 +146,11 @@ public abstract class AbstractNetworkNode<T extends Node> {
 		case RECEIVE: {			
 			// Reconstruct IP packet and validate header checksum
 			final IPPacket pkg = IPPacket.from(payload);
-			logger.log("NETWORK-LAYER: received (IP header=%s)", Arrays.toString(pkg.getHeader()));
+			logger.info(format("Received (IP header=%s)", Arrays.toString(pkg.getHeader())));
 			
 			final int checksum = pkg.getHeaderChecksum();
 			if (!pkg.validate(checksum)) {
-				logger.error("NETWORK-LAYER: IP header checksum mismatch! Dropping package...");
+				logger.info("NETWORK-LAYER: IP header checksum mismatch! Dropping package...");
 				return;
 			}
 			
@@ -194,25 +195,25 @@ public abstract class AbstractNetworkNode<T extends Node> {
 			destFrame.setPayload(payload);
 			
 			// Deliver to physical-layer
-			logger.log("LINK-LAYER: send (Ethernet header=%s)", Arrays.toString(destFrame.getHeader()));
+			logger.info(format("Send (Ethernet header=%s)", Arrays.toString(destFrame.getHeader())));
 			physicalLayer(destFrame.toByteArray(), transmit, addr);
 			
 			break;
 		case RECEIVE:
 			// Reconstruct Ethernet frame and validate CRC
 			final EthernetFrame srcFrame = EthernetFrame.from(payload);
-			logger.log("LINK-LAYER: received (Ethernet header=%s)", Arrays.toString(srcFrame.getHeader()));
+			logger.info(format("Received (Ethernet header=%s)", Arrays.toString(srcFrame.getHeader())));
 
 			final int crc = srcFrame.getCrc32();
 			if (!srcFrame.validate(crc)) {
-				logger.error("LINK-LAYER: CRC check failed! Dropping packet..");
+				logger.severe("CRC check failed! Dropping packet..");
 				return;
 			}
 			
 			// Make sure that the packet is for us
 			final byte[] destMac = srcFrame.getDestinationMac();
 			if (!matchesInterface(destMac)) {
-				logger.log("LINK-LAYER: Payload with destination MAC '%s' does not belong to me!", NetUtils.byteArrayToMac(destMac));
+				logger.info(format("Payload with destination MAC '%s' does not belong to me!", NetUtils.byteArrayToMac(destMac)));
 				return;
 			}
 			
@@ -247,7 +248,7 @@ public abstract class AbstractNetworkNode<T extends Node> {
 		case SEND:
 			// Find network and write payload bytes on 'wire'
 			final IP network = networkAddress(addr.getSourceAddress());
-			logger.log("PHYSICAL-LAYER: send to network '%s'", network);
+			logger.info(format("Send to network '%s'", network));
 			for (final AbstractNetworkNode<? extends Node> node : topology.nodesForNetwork(network)) {
 				if (!node.equals(this)) {
 					node.physicalLayer(payload, Transmit.RECEIVE, null);
@@ -256,7 +257,7 @@ public abstract class AbstractNetworkNode<T extends Node> {
 			
 			break;
 		case RECEIVE:
-			logger.log("PHYSICAL-LAYER: receive");
+			logger.info("PHYSICAL-LAYER: receive");
 			
 			// Deliver payload to link-layer
 			linkLayer(payload, transmit, null);

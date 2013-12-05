@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 
@@ -23,11 +26,16 @@ import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
+	final Logger logger;
+	
+	private final Map<IP, List<TCPSegment>> receiveBuffer;
+
 	private int receiveIndex = 0;
-	private final List<TCPSegment> segBuffer = new ArrayList<>();
 
 	public NetworkHost(final Topology topology, final Host descriptor) {
 		super(topology, descriptor);
+		this.logger = Logger.getLogger(descriptor.id);
+		this.receiveBuffer = new HashMap<>();
 	}
 
 	private void application(byte[] assemble, Address addr) {
@@ -47,18 +55,19 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 
 			try (final FileOutputStream out = new FileOutputStream(outputFile)) {
 				out.write(buffer.array());
-				logger.log("APPLICATION: wrote file '%s'", filename);
+				logger.info(format("Wrote file '%s'", filename));
 			}
 		} catch (final IOException ex) {
 			ex.printStackTrace();
 		}
 	}
-
+	
 	@Override
 	public void transport(final byte[] payload, final Transmit transmit, final Address addr) {
 		switch (transmit) {
 		case SEND: {
-			// Check: Make sure segments are created for the given byte array based on MTU 
+			// Check: Make sure segments are created for the given byte array based on MTU
+			
 			if(payload.length > getLocalMTU(null)) {
 				// Local counter
 				int iCount = 0;
@@ -78,60 +87,60 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 					final TCPSegment seg = new TCPSegment(iCount++, bFlag, addr.getSourcePort(), addr.getDestPort());
 					seg.setPayload(segSlice);
 
-					final byte[] temp = seg.toByteArray();
 					// Deliver to link-layer
-					logger.log("transport-layer send + " + temp.length);
+					logger.info("Sending");
 					networkLayer(seg.toByteArray(), transmit, addr);	
 				}
 			}
 			else {
 				// Setup the TCP header
 				// Construct TCP segment and set payload
-				final TCPSegment seg = new TCPSegment(ident++, TCPSegment.FIN, addr.getSourcePort(), addr.getDestPort());
+				final TCPSegment seg = new TCPSegment(0, TCPSegment.FIN, addr.getSourcePort(), addr.getDestPort());
 				seg.setPayload(payload);
 
 				// Deliver to link-layer
-				logger.log("transport-layer send");
+				logger.info("Sending");
 				networkLayer(seg.toByteArray(), transmit, addr);
 			}
 			
 			break;
 		}
 		case RECEIVE: {
-			//logger.log("TRANSPORT-LAYER: receive");
+			logger.info("Received");
 			
 			// Reconstruct TCP segment and validate header
 			final TCPSegment seg = TCPSegment.from(payload);
 			final int checksum = seg.getHeaderChecksum();
 			if (!seg.validate(checksum)) {
-				logger.error("TRANSPORT-LAYER: TCP header checksum mismatch! Dropping package...");
+				logger.severe("TCP header checksum mismatch! Dropping package...");
 				return;
 			}
 			
 			// Update the list with the segments
-			logger.log("TRANSPORT-LAYER: Adding Segment to buffer");
-			segBuffer.add(seg.getSeqNum(), seg);
+			logger.info("Adding Segment to buffer");
+			final IP key = addr.getSourceAddress();
+			bufferFor(key).add(seg.getSeqNum(), seg);
 			
 			// Check: Make sure we have only one segment or many of them
 			if(seg.isFin()) {
-				logger.log("TRANSPORT-LAYER: Received last segment");
+				logger.info("Received last segment");
 				int size = 0;
+				
+				final List<TCPSegment> segments = receiveBuffer.remove(key);
+				
 				// Construct the buffer
-				for(final TCPSegment s : segBuffer) {
+				for(final TCPSegment s : segments) {
 					size += s.getPayload().length;
 				}
 				
 				// Allocate the buffer
-				ByteBuffer newPayload = ByteBuffer.allocate(size);
-				for(final TCPSegment s : segBuffer) {
+				final ByteBuffer newPayload = ByteBuffer.allocate(size);
+				for(final TCPSegment s : segments) {
 					newPayload.put(s.getPayload());
 				}
-				logger.log("TRANSPORT-LAYER: Assembling %d segments", segBuffer.size());
-				
-				// Clear the buffer
-				segBuffer.clear();
-				
+								
 				// Application layer
+				logger.info(format("Assembling %d segments", segments.size()));
 				application(newPayload.array(), addr);
 			}
 						
@@ -141,9 +150,19 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 		}
 	}
 
+	private List<TCPSegment> bufferFor(IP source) {
+		synchronized (receiveBuffer) {
+			if (!receiveBuffer.containsKey(source)) {
+				receiveBuffer.put(source, new ArrayList<TCPSegment>());
+			}
+			
+			return receiveBuffer.get(source);
+		}
+	}
+
 	@Override
 	public void run() {
-		logger.log(format("APPLICATION: starting with observable directory: '%s'", descriptor.observable().getAbsolutePath()));
+		logger.info(format("Starting with observable directory: '%s'", descriptor.observable().getAbsolutePath()));
 		while (true) {
 			final String[] files = descriptor.observable().list(
 					new FilenameFilter() {
@@ -155,14 +174,14 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 					});
 
 			if (files != null && files.length > 0) {
-				logger.log("APPLICATION: new files discovered");
+				logger.info("New files discovered");
 				for (final String name : files) {
 					final File f = new File(descriptor.observable(), name);
 					final String targetHostname = name.split("\\.")[0];
 					final Host resolved = (Host) topology.resolve(targetHostname);
 
 					if (resolved == null) {
-						logger.error("APPLICATION: Unable to resolve host! Deleting file...");
+						logger.severe("Unable to resolve host! Deleting file...");
 						f.delete();
 						continue;
 					}
@@ -171,7 +190,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 						final byte[] data = FileUtils.readFileToByteArray(f);
 
 						f.delete();
-						logger.log("APPLICATION: %s read, sending to transport layer...", f.getName());
+						logger.info(format("%s read, sending to transport layer...", f.getName()));
 						transport(data, Transmit.SEND, new Address(descriptor.ip, resolved.ip));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block

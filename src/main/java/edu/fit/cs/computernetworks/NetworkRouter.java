@@ -1,6 +1,9 @@
 package edu.fit.cs.computernetworks;
 
+import static java.lang.String.format;
+
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import edu.fit.cs.computernetworks.model.Address;
 import edu.fit.cs.computernetworks.model.IPPacket;
@@ -20,9 +23,12 @@ import edu.fit.cs.computernetworks.utils.NetUtils;
 public class NetworkRouter extends AbstractNetworkNode<Router> {
 	// Default MTU if none can be found
 	private static final int DEFAULT_MTU = 1400;
+	
+	private final Logger logger;
 
 	public NetworkRouter(final Topology topology, final Router descriptor) {
 		super(topology, descriptor);
+		this.logger = Logger.getLogger(descriptor.id);
 	}
 	
 	@Override
@@ -30,7 +36,7 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 		// TODO we may need to call this layer on the router in the case where
 		// network interface MTU differ between source and destination. I.e.
 		// need to re-segment data to fit MTU of next hop.
-		logger.error("TRANSPORT WAS CALLED ON A ROUTER!!");
+		logger.severe("TRANSPORT WAS CALLED ON A ROUTER!!");
 	}
 	
 	/**
@@ -55,14 +61,14 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 		final IPPacket pkg = IPPacket.from(payload);
 		final int checksum = pkg.getHeaderChecksum();
 		if (!pkg.validate(checksum)) {
-			logger.error("NETWORK-LAYER: Header checksum mismatch! Dropping package...");
+			logger.severe("Header checksum mismatch! Dropping package...");
 		}
 		
 		// Find correct network interface to write new package
 		final IP destIp = NetUtils.wrap(pkg.getDestIPAddress());
 		final Port interf = descriptor.getPortForDestinationIP(destIp);
 		if (interf == null) {
-			logger.log("NETWORK-LAYER: Unable to locate interface for destination IP: " + destIp.toString());
+			logger.info(format("Unable to locate interface for destination IP: " + destIp.toString()));
 			return;
 		}
 		
@@ -72,7 +78,7 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 		newAddr.setDestMac(NetUtils.macToByteArray(topology.arpResolve(destIp)));
 
 		// Send to destination MAC
-		logger.log("NETWORK-LAYER: send (IP header=%s)", Arrays.toString(pkg.getHeader()));
+		logger.info(format("Send (IP header=%s)", Arrays.toString(pkg.getHeader())));
 		linkLayer(payload, Transmit.SEND, newAddr);
 	}
 	
