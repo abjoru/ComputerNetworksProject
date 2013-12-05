@@ -8,7 +8,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -91,7 +90,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 
 				// Deliver to link-layer
 				logger.log("transport-layer send");
-				networkLayer(payload, transmit, addr);
+				networkLayer(seg.toByteArray(), transmit, addr);
 			}
 			
 			break;
