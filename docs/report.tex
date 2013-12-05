@@ -1,6 +1,9 @@
 \documentclass{scrartcl}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[english]{babel}
 \usepackage[toc,page]{appendix}
 \setlength{\topmargin}{-.5in}
 \setlength{\textheight}{9in}
@@ -53,21 +56,80 @@
 \newpage
 
 \section{Summary}
-Short summary of the project
+The objective of this project is to demonstrate the functionality of some of the OSI layers in the communication stack. In particular, key functions performed by layers 2 (Data Link), 3 (Network) and 4 (Transport) is to be emulated for the purpose of transferring a file from one network node to another \cite{assignment}. 
 
 \section{Architecture}
-The architecture and design
+The architecture of the network simulator is fairly simple. The main application class, \texttt{Simulator}, is responsible for reading the topology and creating each network node. A network node, \textit{host or router}, are represented as system threads. Each of these network nodes share a common super-class \texttt{AbstractNetworkNode} that defines common functionality and basic implementation for the OSI layer methods. The OSI layer methods shares the same pattern in which they handle both incoming and outgoing data. This is achieved through the \texttt{Transmit} enum type that is a required argument along with the data payload. \\
+
+The \texttt{physicalLayer(byte[], Transmit, Address)} method will send a given packet to every node attached to the same network, thereby simulating the task of writing a packet on the 'wire'. This is achieved by collecting every node attached to the sender's network address through the use of utility methods on the \texttt{Topology} class. When the physical layer method receives a packet, it will just hand it off to the layer above it.\\
+
+The \texttt{linkLayer(byte[], Transmit, Address)} method will packet a given payload in an \texttt{EthernetFrame} along with the source and destination MAC addresses from the \texttt{Address} argument. The frame will then be handed down to the physical layer method to complete the sending responsibilities of the layer. When the link layer receives a packet it will first verify the cyclic redundancy check (CRC) sum of the packet. If this check fails, the packet will be dropped. The next check performed is the destination MAC address check which determines if the packet is actually for this node. If the destination MAC address matches the network node, then the payload of the packet is handed off to the layer above it. Otherwise, the packet is simply dropped since it is not addressed for this node.
+
+\subsection{Network hosts}
+fds
+
+\subsection{Network routers}
+fds
+
+\subsection{Topology}
+The topology for the network described by the assignment was fixed (see figure \ref{fig:topo}). In order to avoid having to hard-code information extracted from this topology (routing tables, MAC tables, etc), we decided to represent the topology in an external format as seen in appendix \ref{appendix:topology}. This will also allow us to change the topology of the network without having to change the implementation. Each node in the topology is represented by a corresponding node in the \textit{JSON} file including relevant information (see table below). Furthermore, the topology representation also contains the hardware address lookup table for the network.
+
+\begin{center}
+\begin{tabular}{l|{c}|{l}}
+\textbf{Element} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & Host, Router & Hostname for the network node \\ \hline
+ip & Host & IP address for a \textit{host} \\ \hline
+mask & Host & Network mask for a \textit{host} \\ \hline
+mac & Host & Hardware address for a \textit{host} \\ \hline
+mtu & Host & Maximum transmit unit for a \textit{host} \\ \hline
+gateway & Host & Default gateway for a \textit{host} \\ \hline
+routing & Host, Router & Routing table for the network node \\ \hline
+ports & Router & Array of network interfaces for a \textit{router} \\ \hline
+port $\to$ ip & Router & IP address for a given port on a \textit{router} \\ \hline
+port $\to$ mask & Router & Network mask for a given port on a \textit{router} \\ \hline
+port $\to$ mac & Router & Hardware address for a given port on a \textit{router} \\ \hline
+port $\to$ mtu & Router & Maximum transmit unit for a given port on a \textit{router} \\ \hline
+\end{tabular}
+\end{center}
+
+The topology representation is mapped to corresponding Java classes using a 3rd-party library called \texttt{Jackson}, which sole purpose is to process the \texttt{JSON} data format. The Java package \texttt{edu.fit.cs.computernetworks.topology} contains the mapped types which is briefly explained below.
+
+\begin{description}
+\item[Topology] is the root class of the topology model.
+\item[Node] defines an abstract superclass for both Host and Router.
+\item[Host] describes a network host.
+\item[Router] describes a network router.
+\item[Port] describes a network interface on a Router.
+\item[RoutingEntry] describes an entry in a node's routing table.
+\item[MACTableEntry] describes an entry in the global ARP table.
+\end{description}
+
+\section{Data flow}
+Basically how data flows between network nodes. Explain how the layer methods work..
 
 \section{Execution}
 Description of how to run the code
 
 \newpage
 \appendix
-\section{Topology Definition JSON} \label{App:AppendixA}
+\section{Assignment Topology} \label{appending:topo-img}
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.65]{topology.png}
+\caption{Network topology for the assignment}
+\label{fig:topo}
+\end{figure}
+\newpage
+\section{Topology Definition JSON} \label{appendix:topology}
 \lstinputlisting[language=json,firstnumber=1]{../src/main/resources/topology2.json}
-
 
 \newpage
 %\bibliographystyle{plain}
 %\bibliography{critique2}
+\begin{thebibliography}{30}
+\bibitem{assignment} Dr. Marco Carvalho, \emph{CSE5231 - Class Project}, Florida Institute of Technology, Fall 2013.
+    
+\end{thebibliography}
+
 \end{document}

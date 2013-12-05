@@ -4,23 +4,42 @@ import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class Address {
-	private final String sourceIp;
-	private final String destIp;
+	public static final int DEFAULT_PORT = 1111;
+	
+	private final IP sourceIp;
+	private final IP destIp;
+	
+	private final int sourcePort;
+	private final int destPort;
 	
 	private byte[] sourceMac;
 	private byte[] destMac;
 	
 	public Address(final String source, final String dest) {
-		this.sourceIp = source;
-		this.destIp = dest;
+		this(source, DEFAULT_PORT, dest, DEFAULT_PORT);
+	}
+	
+	public Address(final String sourceIp, final int sourcePort, final String destIp, final int destPort) {
+		this.sourceIp = NetUtils.wrap(sourceIp);
+		this.destIp = NetUtils.wrap(destIp);
+		this.sourcePort = sourcePort;
+		this.destPort = destPort;
 	}
 	
 	public IP getSourceAddress() {
-		return NetUtils.wrap(sourceIp);
+		return sourceIp;
+	}
+	
+	public int getSourcePort() {
+		return sourcePort;
 	}
 
 	public IP getDestinationAddress() {
-		return NetUtils.wrap(destIp);
+		return destIp;
+	}
+	
+	public int getDestinationPort() {
+		return destPort;
 	}
 	
 	public byte[] getSourceMac() {

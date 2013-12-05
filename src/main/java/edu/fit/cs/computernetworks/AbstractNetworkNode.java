@@ -226,9 +226,10 @@ public abstract class AbstractNetworkNode<T extends Node> {
 	 * Physical Layer
 	 * 
 	 * <b>Sending payloads</b>
-	 * <p>When sending payloads, this method will first find the physical machine (or thread)
-	 * based on the destination MAC address. Once the machine has been found, the payload is
-	 * delivered directly to that machines {@link #physicalLayer(byte[], Transmit, byte[])}.</p>
+	 * <p>When sending payloads, this method will find all nodes connected to the destination
+	 * network. The payload is then written to all nodes except the sender to simulate writing
+	 * the payload on the 'wire'. This is achieved by basically calling the corresponding method
+	 * on each node ({@link #physicalLayer(byte[], Transmit, Address)}).</p>
 	 * 
 	 * <b>Receiving payloads</b>
 	 * <p>When receiving payloads, this method will only send the payload up to the next layer.

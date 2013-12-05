@@ -9,7 +9,6 @@ import edu.fit.cs.computernetworks.topology.Router;
 import edu.fit.cs.computernetworks.topology.Topology;
 import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
-import edu.fit.cs.computernetworks.utils.Tuple;
 
 /**
  * This class represents a network router. Most of the functionality is inherited
@@ -41,8 +40,7 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 	 * fails, the package is dropped. Otherwise, the correct network interface is found and
 	 * the MAC address of that interface is used as the new source MAC address. The 
 	 * destination MAC address is then resolved through {@link Topology#arpResolve(IP)},
-	 * and a new IP packet is constructed and sent to the 
-	 * {@link #linkLayer(byte[], edu.fit.cs.computernetworks.AbstractNetworkNode.Transmit, Tuple)}
+	 * and the payload is sent to the {@link #linkLayer(byte[], edu.fit.cs.computernetworks.AbstractNetworkNode.Transmit, Address)}
 	 * method if the router.
 	 * 
 	 * @see Topology#arpResolve(IP)
