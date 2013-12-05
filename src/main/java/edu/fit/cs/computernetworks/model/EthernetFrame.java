@@ -51,6 +51,14 @@ public class EthernetFrame {
 		return crc;
 	}
 	
+	public byte[] getSourceMac() {
+		return macSource;
+	}
+	
+	public byte[] getDestinationMac() {
+		return macDestination;
+	}
+	
 	public boolean validate(final int crc) {
 		this.crc = 0;
 		final int check = crc32(toByteArray());
@@ -79,7 +87,11 @@ public class EthernetFrame {
 		return frame;
 	}
 	
-	public byte[] toByteArray() {
+	public byte[] getHeader() {
+		return getHeader(new byte[0]);
+	}
+	
+	private byte[] getHeader(final byte[] payload) {
 		final ByteBuffer buffer = ByteBuffer.allocate(payload.length + HEADER_LENGTH);
 
 		buffer.put(preamble);
@@ -92,6 +104,10 @@ public class EthernetFrame {
 		buffer.putInt(crc);
 		
 		return buffer.array();
+	}
+
+	public byte[] toByteArray() {
+		return getHeader(this.payload);
 	}
 
 }

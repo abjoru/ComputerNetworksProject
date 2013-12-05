@@ -30,6 +30,14 @@ public class IPPacket {
 		// package protected default constructor
 	}
 	
+	public IPPacket(final IPPacket copy) {
+		this.identification = copy.identification;
+		this.sourceIPAddress = copy.sourceIPAddress;
+		this.destIPAddress = copy.destIPAddress;
+		this.headerChecksum = copy.headerChecksum;
+		this.payload = copy.payload;
+	}
+	
 	public IPPacket(final int id, final int srcAddr, final int destAddr) {
 		this.identification = id;
 		this.sourceIPAddress = srcAddr;
@@ -102,9 +110,15 @@ public class IPPacket {
 	}
 	
 	public boolean validate(final int checksum) {
+		final int oldChecksum = this.headerChecksum;
 		this.headerChecksum = 0;
-		final int check = checksum(getHeader());
-		return check == checksum;
+		
+		try {
+			final int check = checksum(getHeader());
+			return check == checksum;
+		} finally {
+			this.headerChecksum = oldChecksum;
+		}
 	}
 	
 	public byte[] getHeader() {

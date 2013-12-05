@@ -45,7 +45,8 @@ public class Host extends Node {
 			return NetUtils.wrap(directRoute.nextHop);
 		}
 		
-		return null;
+		// No route to destination, use default gateway
+		return NetUtils.wrap(gateway);
 	}
 	
 	private RoutingEntry getDirectRoute(final IP destIp) {
@@ -57,5 +58,15 @@ public class Host extends Node {
 		}
 		
 		return null;
+	}
+	
+	public IP toNetworkAddress() {
+		final IP ip = NetUtils.wrap(this.ip);
+		final IP mask = NetUtils.wrap(this.mask);
+		return NetUtils.networkAddress(ip, mask);
+	}
+	
+	public boolean matchesNetwork(final IP networkAddr) {
+		return networkAddr.equals(toNetworkAddress());
 	}
 }

@@ -1,5 +1,7 @@
 package edu.fit.cs.computernetworks.utils;
 
+import static java.lang.String.format;
+
 
 /**
  * General purpose network address utils.
@@ -78,6 +80,23 @@ public class NetUtils {
 		}
 		
 		return res;
+	}
+	
+	/**
+	 * Transforms a byte array representation of hardware address (MAC)
+	 * to a readable representation.
+	 * 
+	 * @param mac
+	 * @return
+	 */
+	public static String byteArrayToMac(final byte[] mac) {
+		final StringBuilder buff = new StringBuilder();
+		for (final byte b : mac) {
+			if (buff.length() > 0) buff.append(":");
+			buff.append(format("%02x", b));
+		}
+		
+		return buff.toString();
 	}
 	
 }

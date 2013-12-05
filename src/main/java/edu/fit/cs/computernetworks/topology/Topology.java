@@ -2,9 +2,12 @@ package edu.fit.cs.computernetworks.topology;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -82,6 +85,22 @@ public class Topology {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Returns all nodes belonging to the given network.
+	 * 
+	 * @param network
+	 * @return
+	 */
+	public Collection<AbstractNetworkNode<? extends Node>> nodesForNetwork(final IP network) {
+		final Set<AbstractNetworkNode<? extends Node>> results = new HashSet<>();
+		for (final AbstractNetworkNode<? extends Node> node : arpTable.values()) {
+			if (node.belongsToNetwork(network)) 
+				results.add(node);
+		}
+		
+		return results;
 	}
 	
 	/**

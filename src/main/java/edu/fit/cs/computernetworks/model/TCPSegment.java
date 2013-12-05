@@ -37,7 +37,7 @@ public class TCPSegment {
 		this.allFlags = flag;
 		this.sourcePort = srcPort;
 		this.destPort = destPort;
-		this.headerChecksum = checksum(getHeader());
+		this.headerChecksum = (short) checksum(getHeader());
 	}
 	
 	public int getHeaderChecksum() {
@@ -82,7 +82,7 @@ public class TCPSegment {
 		
 		try {
 			
-			final int check = checksum(getHeader());
+			final short check = (short) checksum(getHeader());
 			return check == checksum;
 		} finally {
 			this.headerChecksum = oldChecksum;

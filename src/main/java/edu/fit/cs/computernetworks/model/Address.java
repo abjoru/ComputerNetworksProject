@@ -6,8 +6,11 @@ import edu.fit.cs.computernetworks.utils.NetUtils;
 public class Address {
 	public static final short DEFAULT_PORT = 1111;
 	
-	private final String sourceIp;
-	private final String destIp;
+	private final IP sourceIp;
+	private final IP destIp;
+	
+	private byte[] sourceMac;
+	private byte[] destMac;
 	
 	private final short sourcePort;
 	private final short destPort;
@@ -18,18 +21,34 @@ public class Address {
 	}
 
 	public Address(final String sourceIP, final String destIP, final short sourcePort, final short destPort) {
-		this.sourceIp = sourceIP;
-		this.destIp = destIP;
+		this.sourceIp = NetUtils.wrap(sourceIP);
+		this.destIp = NetUtils.wrap(destIP);
 		this.sourcePort = sourcePort;
 		this.destPort = destPort;
 	}
 	
 	public IP getSourceAddress() {
-		return NetUtils.wrap(sourceIp);
+		return sourceIp;
 	}
-
+	
 	public IP getDestinationAddress() {
-		return NetUtils.wrap(destIp);
+		return destIp;
+	}
+	
+	public byte[] getSourceMac() {
+		return sourceMac;
+	}
+	
+	public void setSourceMac(final byte[] sourceMac) {
+		this.sourceMac = sourceMac;
+	}
+	
+	public byte[] getDestMac() {
+		return destMac;
+	}
+	
+	public void setDestMac(final byte[] destMac) {
+		this.destMac = destMac;
 	}
 
 	public short getSourcePort() {

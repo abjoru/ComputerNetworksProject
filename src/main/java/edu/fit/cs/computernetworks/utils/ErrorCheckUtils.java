@@ -26,7 +26,7 @@ public class ErrorCheckUtils {
 	/**
 	 * Calculate checksum of the given byte array.
 	 */
-	public static short checksum(final byte[] data) {
+	public static int checksum(final byte[] data) {
 		// Based on http://stackoverflow.com/questions/4113890/how-to-calculate-the-internet-checksum-from-a-byte-in-java
 		int length = data.length;
 		int sum = 0;
@@ -52,7 +52,7 @@ public class ErrorCheckUtils {
 			}
 		}
 		
-		return (short) (~sum & 0xffff);
+		return ~sum & 0xffff;
 	}
 
 }
