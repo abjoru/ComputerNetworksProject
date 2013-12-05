@@ -32,6 +32,7 @@ public abstract class AbstractNetworkNode<T extends Node> {
 	// shared logger
 	protected final SimpleLogger logger;
 	
+	
 	public AbstractNetworkNode(final Topology topo, final T descriptor) {
 		this.descriptor = descriptor;
 		this.topology = topo;

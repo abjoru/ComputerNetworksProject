@@ -1,6 +1,7 @@
 package edu.fit.cs.computernetworks;
 
 import java.io.IOException;
+import java.util.logging.LogManager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -9,6 +10,12 @@ import edu.fit.cs.computernetworks.topology.Topology;
 public class Simulator {
 	
 	public static void main(final String[] args) {
+		try {
+			LogManager.getLogManager().readConfiguration(Simulator.class.getResourceAsStream("/log.properties"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		final Topology topology = createTopology("/topology2.json");
 		topology.buildARP();
 		

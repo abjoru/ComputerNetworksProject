@@ -4,9 +4,11 @@
 .project
 
 .settings/org.eclipse.jdt.core.prefs
-
+*.log
 /bin
 /build
+/temp
+/temp2
 
 /.gradle
 /docs/.texpadtmp/
