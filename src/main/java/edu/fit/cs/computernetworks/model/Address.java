@@ -12,8 +12,8 @@ public class Address {
 	private byte[] sourceMac;
 	private byte[] destMac;
 	
-	private final short sourcePort;
-	private final short destPort;
+	private short sourcePort;
+	private short destPort;
 	
 	
 	public Address(final String source, final String dest) {
@@ -55,8 +55,16 @@ public class Address {
 		return sourcePort;
 	}
 	
+	public void setSourcePort(final short sourcePort) {
+		this.sourcePort = sourcePort;
+	}
+	
 	public short getDestPort() {
 		return destPort;
+	}
+	
+	public void setDestPort(final short destPort) {
+		this.destPort = destPort;
 	}
 	
 }

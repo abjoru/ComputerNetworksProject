@@ -1,5 +1,6 @@
 package edu.fit.cs.computernetworks;
 
+import static java.lang.Math.min;
 import static java.lang.String.format;
 
 import java.io.File;
@@ -26,8 +27,7 @@ import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
 
 public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
-	final Logger logger;
-	
+	private final Logger logger;
 	private final Map<IP, List<TCPSegment>> receiveBuffer;
 
 	private int receiveIndex = 0;
@@ -67,33 +67,31 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 		switch (transmit) {
 		case SEND: {
 			// Check: Make sure segments are created for the given byte array based on MTU
-			
 			if(payload.length > getLocalMTU(null)) {
 				// Local counter
-				int iCount = 0;
+				int segmentCount = 0;
 				
-				final ByteBuffer bBuff = ByteBuffer.wrap(payload);
-				// Get all the header size
+				// Allocate buffer and calculate header size
+				final ByteBuffer buffer = ByteBuffer.wrap(payload);
 				final int segSize = getLocalMTU(null) - TCPSegment.HEADER_SIZE - IPPacket.HEADER_SIZE - EthernetFrame.HEADER_LENGTH;
+
 				// Check: Make sure there is still bytes in the payload
-				while(bBuff.hasRemaining()) {
-					final byte[] segSlice = new byte[Math.min(bBuff.remaining(), segSize)];
-					bBuff.get(segSlice);
+				while(buffer.hasRemaining()) {
+					final byte[] slice = new byte[min(buffer.remaining(), segSize)];
+					buffer.get(slice);
 					
 					// Check: which flag is set
-					final byte bFlag = bBuff.hasRemaining() ? TCPSegment.SYN : TCPSegment.FIN;
+					final byte flag = buffer.hasRemaining() ? TCPSegment.SYN : TCPSegment.FIN;
 					
 					// Construct TCP segment and set payload
-					final TCPSegment seg = new TCPSegment(iCount++, bFlag, addr.getSourcePort(), addr.getDestPort());
-					seg.setPayload(segSlice);
+					final TCPSegment seg = new TCPSegment(segmentCount++, flag, addr.getSourcePort(), addr.getDestPort());
+					seg.setPayload(slice);
 
 					// Deliver to link-layer
 					logger.info("Sending");
 					networkLayer(seg.toByteArray(), transmit, addr);	
 				}
-			}
-			else {
-				// Setup the TCP header
+			} else {
 				// Construct TCP segment and set payload
 				final TCPSegment seg = new TCPSegment(0, TCPSegment.FIN, addr.getSourcePort(), addr.getDestPort());
 				seg.setPayload(payload);
@@ -128,18 +126,20 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 				
 				final List<TCPSegment> segments = receiveBuffer.remove(key);
 				
-				// Construct the buffer
+				// Count the payload length
 				for(final TCPSegment s : segments) {
 					size += s.getPayload().length;
 				}
 				
-				// Allocate the buffer
+				// Allocate buffer and combine segments
 				final ByteBuffer newPayload = ByteBuffer.allocate(size);
 				for(final TCPSegment s : segments) {
 					newPayload.put(s.getPayload());
 				}
 								
-				// Application layer
+				// Deliver to application layer
+				addr.setDestPort(seg.getDestPort());
+				addr.setSourcePort(seg.getSourcePort());
 				logger.info(format("Assembling %d segments", segments.size()));
 				application(newPayload.array(), addr);
 			}
@@ -166,7 +166,6 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 		while (true) {
 			final String[] files = descriptor.observable().list(
 					new FilenameFilter() {
-
 						@Override
 						public boolean accept(File dir, String name) {
 							return name.split("\\.")[0].length() == 1;

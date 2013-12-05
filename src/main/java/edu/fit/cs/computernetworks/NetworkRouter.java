@@ -33,9 +33,6 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 	
 	@Override
 	public void transport(final byte[] payload, final Transmit transmit, final Address addr) {
-		// TODO we may need to call this layer on the router in the case where
-		// network interface MTU differ between source and destination. I.e.
-		// need to re-segment data to fit MTU of next hop.
 		logger.severe("TRANSPORT WAS CALLED ON A ROUTER!!");
 	}
 	

@@ -52,19 +52,19 @@ public class TCPSegment {
 		return (allFlags == SYN); 
 	}
 	
-	public int getSourcePort() {
+	public short getSourcePort() {
 		return sourcePort;
 	}
 	
-	public void setSourcePort(short sourcePort) {
+	public void setSourcePort(final short sourcePort) {
 		this.sourcePort = sourcePort;
 	}
 	
-	public int getDestPort() {
+	public short getDestPort() {
 		return destPort;
 	}
 	
-	public void setDestPort(short destPort) {
+	public void setDestPort(final short destPort) {
 		this.destPort = destPort;
 	}
 

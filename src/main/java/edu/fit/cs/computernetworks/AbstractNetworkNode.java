@@ -257,9 +257,8 @@ public abstract class AbstractNetworkNode<T extends Node> {
 			
 			break;
 		case RECEIVE:
-			logger.info("PHYSICAL-LAYER: receive");
-			
 			// Deliver payload to link-layer
+			logger.info("Received packet");
 			linkLayer(payload, transmit, null);
 			
 			break;
