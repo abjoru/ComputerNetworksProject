@@ -137,6 +137,22 @@ For Example: Like, /tmp/A,  /tmp/B,  /tmp/C \\
 gradlew run -ProotPath=/tmp \\ \\
 Notice the property ‘rootPath’ that specifies the root path from where the threads will listen for files. The default path is still ‘/tmp/{id}’ where id is the name of the host node \\ \\
 
+\section{Output}
+This section contains the output of the application for different scenarios. \\
+
+\subsection{1 KB File transfer from Node-A to Node-B (B.txt)}
+\lstinputlisting[language=json,firstnumber=1]{../FromAtoB-1kb.log}
+\subsection{1 KB File transfer from Node-B to Node-C (C.txt)}
+\lstinputlisting[language=json,firstnumber=1]{../FromBtoC-1kb.log}
+\subsection{121 KB File transfer from Node-A to Node-C (C.jpg)}
+\lstinputlisting[language=json,firstnumber=1]{../FromAtoC-121kb.log}
+\subsection{276 KB File transfer from Node-B to Node-A (A.gif)}
+\lstinputlisting[language=json,firstnumber=1]{../FromBtoA-276kb.log}
+\subsection{4 KB File transfer from Node-C to Node-B (B.xls)}
+\lstinputlisting[language=json,firstnumber=1]{../FromCtoB-4kb.log}
+\subsection{13 KB File transfer from Node-C to Node-A (A.pdf)}
+\lstinputlisting[language=json,firstnumber=1]{../FromCtoA-13kb.log}
+
 \newpage
 \appendix
 \section{Assignment Topology} \label{appending:topo-img}
