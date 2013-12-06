@@ -47,7 +47,7 @@
 }
 
 \begin{document}
-\author{Andreas Bjoru \& Srini Venkatesh\\ Florida Institute of Technology}
+\author{Andreas Bjoru \& Srinivasa Venkatesh\\ Florida Institute of Technology}
 \title{CSE 5231 Computer Networks}
 \subtitle{Class Project Report, Fall 2013}
 \renewcommand{\today}{November 26, 2013}
@@ -109,8 +109,39 @@ The topology representation is mapped to corresponding Java classes using a 3rd-
 \end{description}
 
 \section{Data flow}
-Basically how data flows between network nodes. Explain how the layer methods work..
+Data flow happens in both direction either SEND or RECEIVE based on the user specified action falg. Each layer process this flag and perform specified operations.
+\subsection{Application Layer}
+Applicaiton Layer starts the threads and monitoring the specified folder (ex: /tmp/A). \\ \\
+Send data flow:
+As soon as the file has bene placed inside the folder, it reads the file into byte array. It looks at the routing table to find which is the next hop for this route. So it resolves IP addresses from the routing table. Calls the transport layer with this paramaets: \texttt{transport(data, Transmit.SEND, new Address(descriptor.ip, resolved.ip))}. \\ \\
+Receive data flow:
+Receives the data from transport layer and stores in a Byte Buffer. Creates the output generic file (file-xx.bin). Where xx defines the numerical number. Takes the byte array data and writes into the specified file.
+\subsection{Transport Layer}
+Transport layer function receives the the information from application layer and sends it to network layer and vice versa. \\ \\
+Send data flow: 
+The payload will be sliced into segments while sending the data. When sending a given payload, it slices the payload into many segments based on the payload size. First it will check the length of the payload to make sure it needs to be sliced to MTU's size or not. If the payload size is more than the MTU's size then it will slice the segments considering the header length. These segments has TCP header along with data. Source and destination ports are included in the header. SYN and FIN flags are used to identify segments starting and ending point. This payload will be sent to network layer for adding IP header and route this segment to right node. Sending parameters would be \texttt{networkLayer(byte[], Transmit, Address)} method. \\ \\
+Receive data flow:
+When receiving a payload, this method will convert the payload into segments. It will then extract the chechsum to make sure segment is valid, if it's not valid it drops. If not, it keeps accumulating the segments into a buffer. along with sequence number. Then it will check for the FIN flag in the header to confirm that that's the last segment. If it's not FIN (it must be SYN), then it keeps assembling the segments to build a complete payload. Once the payload is built, it will be sent to application layer for creating a file in destination node.
+\subsection{Network Layer}
+Network layer function reveives the data from transport layer and sends it to Link layer and vice versa. \\ \\
+Send data flow:
+When sending a given payload, this method will use the provided  \texttt{Address} parameter to determine the next hop and its MAC address. It will then package the payload in an  \texttt{IPPacket} with source and destination addresses set before handing it off to the  \texttt{linkLayer(byte[], Transmit, Tuple)} method. \\ \\
+Receive data flow:
+When receiving a payload, this method will convert the payload into an  \texttt{IPPacket}. It will then extract the source and destination IP addresses from the header and construct a new \texttt{Address} object. The address object along with the extracted payload will be handed off to the  \texttt{transport(byte[], Transmit, Address)} method. Also note that the method will verify the header checksum. If there is a mismatch, the package will be dropped.
+\subsection{Data Link Layer}
+Link layer function receives the data from network layer and send it to physical layer and vice versa. \\ \\
+Send data flow:
+When sending payloads, this method will construct an \texttt{EthernetFrame} with payload, source, and destination MAC addresses. The frame is then delivered to \texttt{physicalLayer(byte[], Transmit, byte[])} \\ \\
+Receive data flow:
+When receiving payloads, this method will first reconstruct the \texttt{EthernetFrame} before verifying the frame's CRC. If the CRC is valid, the frame's payload is delivered to the \texttt{networkLayer(byte[], Transmit, Address)}
+\subsection{Physical Layer}
+Physical Layer function receives the data from Link layer and writes it to wire, on the other hand it reads the information from wire and sends to Link lyaer.\\ \\
+Send data flow:
+When sending payloads, this method will find all nodes connected to the destination network. The payload is then written to all nodes except the sender to simulate writing the payload on the 'wire'. This is achieved by basically calling the corresponding method on each node \texttt{physicalLayer(byte[], Transmit, Address)} \\ \\ 
+Receive data flow:
+When receiving payloads, this method will only send the payload up to the next layer. In this case, to \texttt{linkLayer(byte[], Transmit, Tuple)}. 
 
+\newpage
 \section{Execution}
 This project is built on eclipse environment with some additional packages. So first we need to download and install these packages by following the given steps.
 \subsection{Windows Environment:}
@@ -135,21 +166,27 @@ For Example: Like, /tmp/A,  /tmp/B,  /tmp/C \\
 6. Execute the following command: 
 
 gradlew run -ProotPath=/tmp \\ \\
-Notice the property ‘rootPath’ that specifies the root path from where the threads will listen for files. The default path is still ‘/tmp/{id}’ where id is the name of the host node \\ \\
+Notice the property ‘rootPath’ that specifies the root path from where the threads will listen for files. The default path is still ‘/tmp/{id}’ where id is the name of the host node 
 
+\newpage
 \section{Output}
 This section contains the output of the application for different scenarios. \\
 
 \subsection{1 KB File transfer from Node-A to Node-B (B.txt)}
 \lstinputlisting[language=json,firstnumber=1]{../FromAtoB-1kb.log}
+\newpage
 \subsection{1 KB File transfer from Node-B to Node-C (C.txt)}
 \lstinputlisting[language=json,firstnumber=1]{../FromBtoC-1kb.log}
+\newpage
 \subsection{121 KB File transfer from Node-A to Node-C (C.jpg)}
 \lstinputlisting[language=json,firstnumber=1]{../FromAtoC-121kb.log}
+\newpage
 \subsection{276 KB File transfer from Node-B to Node-A (A.gif)}
 \lstinputlisting[language=json,firstnumber=1]{../FromBtoA-276kb.log}
+\newpage
 \subsection{4 KB File transfer from Node-C to Node-B (B.xls)}
 \lstinputlisting[language=json,firstnumber=1]{../FromCtoB-4kb.log}
+\newpage
 \subsection{13 KB File transfer from Node-C to Node-A (A.pdf)}
 \lstinputlisting[language=json,firstnumber=1]{../FromCtoA-13kb.log}
 
