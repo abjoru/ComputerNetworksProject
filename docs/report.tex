@@ -112,19 +112,30 @@ The topology representation is mapped to corresponding Java classes using a 3rd-
 Basically how data flows between network nodes. Explain how the layer methods work..
 
 \section{Execution}
-This project is built on eclipse environment with some additional packages. So first we need to download and install these packages by following the given steps. \\  \\
-Windows Environment: \\
+This project is built on eclipse environment with some additional packages. So first we need to download and install these packages by following the given steps.
+\subsection{Windows Environment:}
 1. Go to command prompt and navigate to the project's root location \\
 2. Execute this command: gradlew.bat eclipse \\
 3. The gradlew command is a wrapper around the gradle build tool and will download the binaries for the build tool before executing the task. \\
 4. When gradle finishes (i.e. eclipse project files have been generated), you can import the project in eclipse by selecting ‘import then existing project’ from the eclipse menus. \\ 
-5. Create sample folder to place the file to tansfer to different nodes. \\
-\\
-Unix Environment: \\
+5. Create sample folder to place the file to tansfer to different nodes.
+
+For Example: Like, {C:\textbackslash tmp\textbackslash A}, {C:\textbackslash tmp\textbackslash B}, {C:\textbackslash tmp\textbackslash C}  \\
+6. Execute the following command: 
+
+gradlew.bat run -ProotPath=C:\textbackslash tmp
+\subsection{Unix Environment:}
 1. Go to command prompt and navigate to the project's root location \\ 
 2. Execute this command: {gradlew eclipse} \\
 3. The gradlew command is a wrapper around the gradle build tool and will download the binaries for the build tool before executing the task. \\
-4. When gradle finishes (i.e. eclipse project files have been generated), you can import the project in eclipse by selecting ‘import -> existing project’ from the eclipse menus. \\ \\
+4. When gradle finishes (i.e. eclipse project files have been generated), you can import the project in eclipse by selecting ‘import -> existing project’ from the eclipse menus. \\
+5. Create sample folder to place the file to tansfer to different nodes.
+
+For Example: Like, /tmp/A,  /tmp/B,  /tmp/C \\
+6. Execute the following command: 
+
+gradlew run -ProotPath=/tmp \\ \\
+Notice the property ‘rootPath’ that specifies the root path from where the threads will listen for files. The default path is still ‘/tmp/{id}’ where id is the name of the host node \\ \\
 
 \newpage
 \appendix
