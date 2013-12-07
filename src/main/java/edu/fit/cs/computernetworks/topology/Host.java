@@ -30,6 +30,9 @@ public class Host extends Node {
 		return observableDir;
 	}
 	
+	/* (non-Javadoc)
+	 * @see edu.fit.cs.computernetworks.topology.Node#nextHopTo(edu.fit.cs.computernetworks.utils.IP)
+	 */
 	@Override
 	public IP nextHopTo(final IP destIP) {
 		final RoutingEntry directRoute = getDirectRoute(destIP);

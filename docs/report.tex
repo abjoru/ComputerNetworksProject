@@ -63,19 +63,21 @@ The architecture of the network simulator is fairly simple. The main application
 
 The \texttt{physicalLayer(byte[], Transmit, Address)} method will send a given packet to every node attached to the same network, thereby simulating the task of writing a packet on the 'wire'. This is achieved by collecting every node attached to the sender's network address through the use of utility methods on the \texttt{Topology} class. When the physical layer method receives a packet, it will just hand it off to the layer above it.\\
 
-The \texttt{linkLayer(byte[], Transmit, Address)} method will packet a given payload in an \texttt{EthernetFrame} along with the source and destination MAC addresses from the \texttt{Address} argument. The frame will then be handed down to the physical layer method to complete the sending responsibilities of the layer. When the link layer receives a packet it will first verify the cyclic redundancy check (CRC) sum of the packet. If this check fails, the packet will be dropped. The next check performed is the destination MAC address check which determines if the packet is actually for this node. If the destination MAC address matches the network node, then the payload of the packet is handed off to the layer above it. Otherwise, the packet is simply dropped since it is not addressed for this node.
+The \texttt{linkLayer(byte[], Transmit, Address)} method will packet a given payload in an \texttt{EthernetFrame} along with the source and destination MAC addresses from the \texttt{Address} argument. The frame will then be handed down to the physical layer method to complete the sending responsibilities of the layer. When the link layer receives a packet it will first verify the cyclic redundancy check (CRC) sum of the packet. If this check fails, the packet will be dropped. The next check performed is the destination MAC address check which determines if the packet is actually for this node. If the destination MAC address matches the network node, then the payload of the packet is handed off to the layer above it. Otherwise, the packet is simply dropped since it is not addressed for this node.\\
+
+The \texttt{networkLayer(byte[], Transmit, Address)} method will packet a given payload in a \texttt{IPPacket} along with the source and destination IP address. It will determine the next hop to the destination through utility methods on the \texttt{Node} descriptor which will basically use the routing table for the node to determine the path. If no path can be found for the given destination, the default gateway address will be returned. After constructing the \texttt{IPPacket}, the packet object will be serialized (as byte array) and passed to the lower layer. When receiving a payload, this method will convert the byte array into an instance of the \texttt{IPPacket} class in order to extract and validate the header checksum. If the checksum fails, the packet will be dropped, otherwise, the payload of the packet is send to the layer above it.
 
 \subsection{Network hosts}
-The \texttt{transport(payload, transmit, addr)} method slices payload into segments while sending and assembles the segments when it receive the payload. When sending a given payload, it slices the payload into many segments based on the payload size. First it will check the length of the payload to make sure it needs to be sliced to MTU's size or not. If the payload size is more than the MTU's size then it will slice the segments considering the header length. These segments has TCP header along with data. Source and destination ports are included in the header. SYN and FIN flags are used to identify segments starting and ending point. This payload will be sent to network layer for adding IP header and route this segment to right node. Sending parameters would be \texttt{networkLayer(byte[], Transmit, Address)} method. \\
+The \texttt{transportLayer(byte[], Transmit, Address)} method segment a given payload when sending and reassemble multiple segments when receiving. When sending a given payload, it slices the payload into multiple segments based on the payload size. First it will check the length of the payload to make sure it needs to be sliced to MTU's size or not. If the payload size is greater than the MTU then it will slice the segments considering the header length. These segments has TCP header along with data. Source and destination ports are included in the header. SYN and FIN flags are used to identify segments starting and ending point. This payload will be sent to network layer for adding IP header and route this segment to right node. Sending parameters would be \texttt{networkLayer(byte[], Transmit, Address)} method. \\
 
-When receiving a payload, this method will convert the payload into segments. It will then extract the chechsum to make sure segment is valid, if it's not valid it drops. If not, it keeps accumulating the segments into a buffer. along with sequence number. Then it will check for the FIN flag in the header to confirm that that's the last segment. If it's not FIN (it must be SYN), then it keeps assembling the segments to build a complete payload. Once the payload is built, it will be sent to application layer for creating a file in destination node.
+When receiving a payload, this method will convert the payload into segments. It will then extract the chechsum to make sure segment is valid, if it's not valid it drops. If not, it keeps accumulating the segments into a buffer, along with sequence number. Then it will check for the FIN flag in the header to confirm that that's the last segment. If it's not FIN (it must be SYN), then it keeps assembling the segments to build a complete payload. Once the payload is built, it will be sent to application layer for creating a file in destination node.
 
 
 \subsection{Network routers}
-The functionality of the network layer is overridden for routers since they will just route packages to the next network or host. Similar to the inherited version of this method, it will start by verifying the IP header checksum. If the verification fails, the package is dropped. Otherwise, the correct network interface is found and the MAC address of that interface is used as the new source MAC address. The destination MAC address is then resolved through \texttt{Topology arpResolve(IP)},  and the payload is sent to the \texttt{linkLayer(byte[], edu.fit.cs.computernetworks.AbstractNetworkNode.Transmit, Address)} method if the router.
+The functionality of the network layer is overridden for routers since they will just route packages to the next network or host. Similar to the inherited version of this method, it will start by verifying the IP header checksum. If the verification fails, the package is dropped. Otherwise, the correct network interface is found and the MAC address of that interface is used as the new source MAC address. The destination MAC address is then resolved through \texttt{Topology arpResolve(IP)},  and the payload is sent to the \texttt{linkLayer(byte[], Transmit, Address)} method of the router.
 
 \subsection{Topology}
-The topology for the network described by the assignment was fixed (see figure \ref{fig:topo}). In order to avoid having to hard-code information extracted from this topology (routing tables, MAC tables, etc), we decided to represent the topology in an external format as seen in appendix \ref{appendix:topology}. This will also allow us to change the topology of the network without having to change the implementation. Each node in the topology is represented by a corresponding node in the \textit{JSON} file including relevant information (see table below). Furthermore, the topology representation also contains the hardware address lookup table for the network.
+The topology for the network described by the assignment is fixed (as seen in figure \ref{fig:topo} of appendix \ref{appendix:topology}). In order to avoid having to hard-code information extracted from this topology (routing tables, MAC tables, etc), we decided to represent the topology in an external format as seen in the second part of appendix \ref{appendix:topology}. This will also allow us to change the topology of the network without having to change the implementation. Each node in the topology is represented by a corresponding node in the \textit{JSON} file including relevant information (see table below). Furthermore, the topology representation also contains the hardware address lookup table for the network.
 
 \begin{center}
 \begin{tabular}{l|{c}|{l}}
@@ -109,99 +111,74 @@ The topology representation is mapped to corresponding Java classes using a 3rd-
 \end{description}
 
 \section{Data flow}
-Data flow happens in both direction either SEND or RECEIVE based on the user specified action falg. Each layer process this flag and perform specified operations.
-\subsection{Application Layer}
-Applicaiton Layer starts the threads and monitoring the specified folder (ex: /tmp/A). \\ \\
-Send data flow:
-As soon as the file has bene placed inside the folder, it reads the file into byte array. It looks at the routing table to find which is the next hop for this route. So it resolves IP addresses from the routing table. Calls the transport layer with this paramaets: \texttt{transport(data, Transmit.SEND, new Address(descriptor.ip, resolved.ip))}. \\ \\
-Receive data flow:
-Receives the data from transport layer and stores in a Byte Buffer. Creates the output generic file (file-xx.bin). Where xx defines the numerical number. Takes the byte array data and writes into the specified file.
-\subsection{Transport Layer}
-Transport layer function receives the the information from application layer and sends it to network layer and vice versa. \\ \\
-Send data flow: 
-The payload will be sliced into segments while sending the data. When sending a given payload, it slices the payload into many segments based on the payload size. First it will check the length of the payload to make sure it needs to be sliced to MTU's size or not. If the payload size is more than the MTU's size then it will slice the segments considering the header length. These segments has TCP header along with data. Source and destination ports are included in the header. SYN and FIN flags are used to identify segments starting and ending point. This payload will be sent to network layer for adding IP header and route this segment to right node. Sending parameters would be \texttt{networkLayer(byte[], Transmit, Address)} method. \\ \\
-Receive data flow:
-When receiving a payload, this method will convert the payload into segments. It will then extract the chechsum to make sure segment is valid, if it's not valid it drops. If not, it keeps accumulating the segments into a buffer. along with sequence number. Then it will check for the FIN flag in the header to confirm that that's the last segment. If it's not FIN (it must be SYN), then it keeps assembling the segments to build a complete payload. Once the payload is built, it will be sent to application layer for creating a file in destination node.
-\subsection{Network Layer}
-Network layer function reveives the data from transport layer and sends it to Link layer and vice versa. \\ \\
-Send data flow:
-When sending a given payload, this method will use the provided  \texttt{Address} parameter to determine the next hop and its MAC address. It will then package the payload in an  \texttt{IPPacket} with source and destination addresses set before handing it off to the  \texttt{linkLayer(byte[], Transmit, Tuple)} method. \\ \\
-Receive data flow:
-When receiving a payload, this method will convert the payload into an  \texttt{IPPacket}. It will then extract the source and destination IP addresses from the header and construct a new \texttt{Address} object. The address object along with the extracted payload will be handed off to the  \texttt{transport(byte[], Transmit, Address)} method. Also note that the method will verify the header checksum. If there is a mismatch, the package will be dropped.
-\subsection{Data Link Layer}
-Link layer function receives the data from network layer and send it to physical layer and vice versa. \\ \\
-Send data flow:
-When sending payloads, this method will construct an \texttt{EthernetFrame} with payload, source, and destination MAC addresses. The frame is then delivered to \texttt{physicalLayer(byte[], Transmit, byte[])} \\ \\
-Receive data flow:
-When receiving payloads, this method will first reconstruct the \texttt{EthernetFrame} before verifying the frame's CRC. If the CRC is valid, the frame's payload is delivered to the \texttt{networkLayer(byte[], Transmit, Address)}
-\subsection{Physical Layer}
-Physical Layer function receives the data from Link layer and writes it to wire, on the other hand it reads the information from wire and sends to Link lyaer.\\ \\
-Send data flow:
-When sending payloads, this method will find all nodes connected to the destination network. The payload is then written to all nodes except the sender to simulate writing the payload on the 'wire'. This is achieved by basically calling the corresponding method on each node \texttt{physicalLayer(byte[], Transmit, Address)} \\ \\ 
-Receive data flow:
-When receiving payloads, this method will only send the payload up to the next layer. In this case, to \texttt{linkLayer(byte[], Transmit, Tuple)}. 
+Each node in the topology will be mapped to system threads and nodes of type \textit{host} will monitor a filesystem directory for files to send across the network. The name of the monitored directory is based on the node identifier such that for a given node, \textbf{A}, the corresponding directory would resolve to \textbf{/tmp/A} (where /tmp is the default root directory, which may be overridden by application arguments). \\
+
+As soon as a file has been placed/discovered inside the monitored folder, the responsible thread reads the file into a byte array. It uses the filename to determine which host to send the file to, and resolves the IP address if this host through the \texttt{resolve(String)} utility method on the \texttt{Topology} class. The resulting destination IP along with its own IP address and the byte array payload will then be sent to the transport layer. \\
+
+When receiving assembled data from the transport layer, the application layer will generate a generic file with the \textit{file-xx.bin} name pattern where the \textit{xx} part defines an arbitrary sequence number for files written. The assembled data will then simply be written to the new file to conclude the data flow.
 
 \newpage
 \section{Execution}
-This project is built on eclipse environment with some additional packages. So first we need to download and install these packages by following the given steps.
+This project is managed by the \texttt{Gradle} build tool and depends on a couple of external libraries such as \texttt{Jackson}, \texttt{commons-lang}, \texttt{commons-io} for runtime dependencies, and \texttt{JUnit}/\texttt{Mockito} for test dependencies. The build tool will make sure that the proper versions of these libraries are downloaded and made available on the different classpaths. \\
+
+The source distribution accompanying this report includes the build tool wrappers such that the build tool does not have to be installed on the target system. Invoking the build script wrappers will actually download the binaries needed to execute the \texttt{Gradle} build. Once the build is invoked, it will download the required dependencies mentioned above and place them in a local filesystem cache. This essentially means that the first build (including the download of the \texttt{Gradle} binary) will take a little bit of time, but subsequent builds will be fast. \\
+
+The following steps explains how to compile and execute the application on the target system:
+
 \subsection{Windows Environment:}
-1. Go to command prompt and navigate to the project's root location \\
-2. Execute this command: gradlew.bat eclipse \\
-3. The gradlew command is a wrapper around the gradle build tool and will download the binaries for the build tool before executing the task. \\
-4. When gradle finishes (i.e. eclipse project files have been generated), you can import the project in eclipse by selecting ‘import then existing project’ from the eclipse menus. \\ 
-5. Create sample folder to place the file to tansfer to different nodes.
+\begin{enumerate}
+\item Open a terminal (command prompt) and navigate to the project's root folder
+\item Execute the following command: \emph{gradlew.bat build}
+\item Create sample folders to send files between nodes: \emph{Ex: {C:\textbackslash tmp\textbackslash A}, {C:\textbackslash tmp\textbackslash B}, {C:\textbackslash tmp\textbackslash C}}
+\item Put files in the sample folders where the filename should equal the destination: \emph{Ex: {C:\textbackslash tmp\textbackslash A\textbackslash B.txt}}
+\item Execute the following command to run the application: \emph{gradlew.bat run -ProotPath=C:\textbackslash tmp}
+\end{enumerate}
 
-For Example: Like, {C:\textbackslash tmp\textbackslash A}, {C:\textbackslash tmp\textbackslash B}, {C:\textbackslash tmp\textbackslash C}  \\
-6. Execute the following command: 
-
-gradlew.bat run -ProotPath=C:\textbackslash tmp
 \subsection{Unix Environment:}
-1. Go to command prompt and navigate to the project's root location \\ 
-2. Execute this command: {gradlew eclipse} \\
-3. The gradlew command is a wrapper around the gradle build tool and will download the binaries for the build tool before executing the task. \\
-4. When gradle finishes (i.e. eclipse project files have been generated), you can import the project in eclipse by selecting ‘import -> existing project’ from the eclipse menus. \\
-5. Create sample folder to place the file to tansfer to different nodes.
+\begin{enumerate}
+\item Open a terminal and navigate to the project's root folder
+\item Execute the following command: \emph{gradlew build}
+\item Create sample folders to send files between nodes: \emph{Ex: /tmp/A, /tmp/B, /tmp/C}
+\item Put files in the sample folders where the filename should equal the destination: \emph{Ex: /tmp/A/B.txt}
+\item Execute the following command to run the application: \emph{gradlew run -ProotPath=/tmp}
+\end{enumerate}
 
-For Example: Like, /tmp/A,  /tmp/B,  /tmp/C \\
-6. Execute the following command: 
-
-gradlew run -ProotPath=/tmp \\ \\
-Notice the property ‘rootPath’ that specifies the root path from where the threads will listen for files. The default path is still ‘/tmp/{id}’ where id is the name of the host node 
-
-\newpage
-\section{Output}
-This section contains the output of the application for different scenarios. \\
-
-\subsection{1 KB File transfer from Node-A to Node-B (B.txt)}
-\lstinputlisting[language=json,firstnumber=1]{../FromAtoB-1kb.log}
-\newpage
-\subsection{1 KB File transfer from Node-B to Node-C (C.txt)}
-\lstinputlisting[language=json,firstnumber=1]{../FromBtoC-1kb.log}
-\newpage
-\subsection{121 KB File transfer from Node-A to Node-C (C.jpg)}
-\lstinputlisting[language=json,firstnumber=1]{../FromAtoC-121kb.log}
-\newpage
-\subsection{276 KB File transfer from Node-B to Node-A (A.gif)}
-\lstinputlisting[language=json,firstnumber=1]{../FromBtoA-276kb.log}
-\newpage
-\subsection{4 KB File transfer from Node-C to Node-B (B.xls)}
-\lstinputlisting[language=json,firstnumber=1]{../FromCtoB-4kb.log}
-\newpage
-\subsection{13 KB File transfer from Node-C to Node-A (A.pdf)}
-\lstinputlisting[language=json,firstnumber=1]{../FromCtoA-13kb.log}
+Notice the property ‘rootPath’ that specifies the root path from where the threads will listen for files. The default path is still ‘/tmp/{id}’ where id is the name of the host node. See appendix \ref{appendix:runfirst} to \ref{appendix:runlast} for sample output from the application.
 
 \newpage
 \appendix
-\section{Assignment Topology} \label{appending:topo-img}
+\section{Assignment Topology} \label{appendix:topology}
 \begin{figure}[H]
 \centering
 \includegraphics[scale=.65]{topology.png}
 \caption{Network topology for the assignment}
 \label{fig:topo}
 \end{figure}
-\newpage
-\section{Topology Definition JSON} \label{appendix:topology}
+\bigskip
+%\newpage
+%\section{Topology Definition JSON} \label{appendix:topology}
 \lstinputlisting[language=json,firstnumber=1]{../src/main/resources/topology2.json}
+%\caption{Application topology defined in the JSON format}
+%\label{fig:topoJson}
+\centering\small{Application topology defined in the JSON format}
+\newpage
+\section{1 KB File transfer from Node-A to Node-B (B.txt)} \label{appendix:runfirst}
+\lstinputlisting[language=json,firstnumber=1]{FromAtoB-1kb.log}
+\newpage
+\section{1 KB File transfer from Node-B to Node-C (C.txt)}
+\lstinputlisting[language=json,firstnumber=1]{FromBtoC-1kb.log}
+\newpage
+\section{121 KB File transfer from Node-A to Node-C (C.jpg)}
+\lstinputlisting[language=json,firstnumber=1]{FromAtoC-121kb.log}
+\newpage
+\section{276 KB File transfer from Node-B to Node-A (A.gif)}
+\lstinputlisting[language=json,firstnumber=1]{FromBtoA-276kb.log}
+\newpage
+\section{4 KB File transfer from Node-C to Node-B (B.xls)}
+\lstinputlisting[language=json,firstnumber=1]{FromCtoB-4kb.log}
+\newpage
+\section{13 KB File transfer from Node-C to Node-A (A.pdf)} \label{appendix:runlast}
+\lstinputlisting[language=json,firstnumber=1]{FromCtoA-13kb.log}
 
 \newpage
 %\bibliographystyle{plain}

@@ -67,16 +67,6 @@ public class Topology {
 		return null;
 	}
 	
-	/**
-	 * TODO find better name of method
-	 * 
-	 * @param macAddress
-	 * @return
-	 */
-	public AbstractNetworkNode<? extends Node> machineFor(final String macAddress) {
-		return arpTable.get(macAddress);
-	}
-	
 	public AbstractNetworkNode<? extends Node> machineFor(final byte[] macAddress) {
 		for (final String mac : arpTable.keySet()) {
 			if (Arrays.equals(NetUtils.macToByteArray(mac), macAddress)) {

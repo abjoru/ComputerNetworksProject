@@ -8,16 +8,6 @@ import edu.fit.cs.computernetworks.utils.NetUtils;
 public class Router extends Node {
 	public List<Port> ports;
 	
-	public Port getPortForNetwork(final IP networkAddr) {
-		for (final Port p : ports) {
-			if (networkAddr.equals(p.toNetworkAddress())) {
-				return p;
-			}
-		}
-		
-		return null;
-	}
-	
 	public Port getPortForDestinationIP(final IP destIP) {
 		for (final Port p : ports) {
 			if (p.machesDestinationIP(destIP)) {

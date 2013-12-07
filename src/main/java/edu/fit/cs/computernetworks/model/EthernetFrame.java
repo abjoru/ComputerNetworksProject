@@ -17,8 +17,7 @@ public class EthernetFrame {
 	
 	private int crc;
 	
-	private EthernetFrame() {
-		
+	EthernetFrame() {
 	}
 	
 	public EthernetFrame(final byte[] macSource, final byte[] macDest) {
@@ -60,9 +59,15 @@ public class EthernetFrame {
 	}
 	
 	public boolean validate(final int crc) {
+		final int oldCrc = this.crc;
 		this.crc = 0;
-		final int check = crc32(toByteArray());
-		return crc == check;
+		
+		try {
+			final int check = crc32(toByteArray());
+			return crc == check;
+		} finally {
+			this.crc = oldCrc;
+		}
 	}
 	
 	public static EthernetFrame from(final byte[] data) {

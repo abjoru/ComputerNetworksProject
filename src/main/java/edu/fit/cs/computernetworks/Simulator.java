@@ -1,6 +1,7 @@
 package edu.fit.cs.computernetworks;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.LogManager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,12 +11,10 @@ import edu.fit.cs.computernetworks.topology.Topology;
 public class Simulator {
 	
 	public static void main(final String[] args) {
-		try {
-			LogManager.getLogManager().readConfiguration(Simulator.class.getResourceAsStream("/log.properties"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// Configure logger
+		configureLogger();
 		
+		// Create network topology
 		final Topology topology = createTopology("/topology2.json");
 		topology.buildARP();
 		
@@ -24,7 +23,7 @@ public class Simulator {
 			topology.setRootPath(args[0]);
 		}
 		
-		// Start hosts
+		// Start network nodes
 		for (final Thread t : topology.threads) {
 			t.start();
 		}
@@ -37,6 +36,15 @@ public class Simulator {
 		} catch (final IOException e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+	
+	private static void configureLogger() {
+		try {
+			final InputStream in = Simulator.class.getResourceAsStream("/log.properties");
+			LogManager.getLogManager().readConfiguration(in);
+		} catch (final Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 

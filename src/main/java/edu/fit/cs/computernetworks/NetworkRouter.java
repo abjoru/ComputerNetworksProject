@@ -32,7 +32,7 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 	}
 	
 	@Override
-	public void transport(final byte[] payload, final Transmit transmit, final Address addr) {
+	public void transportLayer(final byte[] payload, final Transmit transmit, final Address addr) {
 		logger.severe("TRANSPORT WAS CALLED ON A ROUTER!!");
 	}
 	
@@ -69,7 +69,7 @@ public class NetworkRouter extends AbstractNetworkNode<Router> {
 			return;
 		}
 		
-		// Extract source/destination MACs and construct new package
+		// Extract source/destination MACs and construct intermediate address
 		final Address newAddr = new Address(interf.ip, destIp.toString());
 		newAddr.setSourceMac(getLocalMAC(NetUtils.wrap(interf.ip)));
 		newAddr.setDestMac(NetUtils.macToByteArray(topology.arpResolve(destIp)));

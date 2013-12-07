@@ -38,7 +38,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 		this.receiveBuffer = new HashMap<>();
 	}
 
-	private void application(byte[] assemble, Address addr) {
+	private void applicationLayer(byte[] assemble, Address addr) {
 		final File receivedDir = new File(descriptor.observable(), "received");
 		if (!receivedDir.exists()) {
 			receivedDir.mkdirs();
@@ -88,7 +88,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 	 * 
 	 */
 	@Override
-	public void transport(final byte[] payload, final Transmit transmit, final Address addr) {
+	public void transportLayer(final byte[] payload, final Transmit transmit, final Address addr) {
 		switch (transmit) {
 		case SEND: {
 			// Check: Make sure segments are created for the given byte array based on MTU
@@ -129,7 +129,8 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 			break;
 		}
 		case RECEIVE: {
-			logger.info("Received");
+			final IP ip = addr.getSourceAddress();
+			logger.info(format("Received segment from %s", ip.toString()));
 			
 			// Reconstruct TCP segment and validate header
 			final TCPSegment seg = TCPSegment.from(payload);
@@ -140,16 +141,15 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 			}
 			
 			// Update the list with the segments
-			logger.info("Adding Segment to buffer");
-			final IP key = addr.getSourceAddress();
-			bufferFor(key).add(seg.getSeqNum(), seg);
+			logger.info(format("Adding Segment from %s to buffer", ip.toString()));
+			bufferFor(ip).add(seg.getSeqNum(), seg);
 			
 			// Check: Make sure we have only one segment or many of them
 			if(seg.isFin()) {
-				logger.info("Received last segment");
+				logger.info(format("Last segment received from %s", ip.toString()));
 				int size = 0;
 				
-				final List<TCPSegment> segments = receiveBuffer.remove(key);
+				final List<TCPSegment> segments = receiveBuffer.remove(ip);
 				
 				// Count the payload length
 				for(final TCPSegment s : segments) {
@@ -165,8 +165,8 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 				// Deliver to application layer
 				addr.setDestPort(seg.getDestPort());
 				addr.setSourcePort(seg.getSourcePort());
-				logger.info(format("Assembling %d segments", segments.size()));
-				application(newPayload.array(), addr);
+				logger.info(format("Assembling %d segments from %s", segments.size(), ip.toString()));
+				applicationLayer(newPayload.array(), addr);
 			}
 						
 			break;
@@ -215,7 +215,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 
 						f.delete();
 						logger.info(format("%s read, sending to transport layer...", f.getName()));
-						transport(data, Transmit.SEND, new Address(descriptor.ip, resolved.ip));
+						transportLayer(data, Transmit.SEND, new Address(descriptor.ip, resolved.ip));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

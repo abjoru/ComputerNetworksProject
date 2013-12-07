@@ -12,7 +12,6 @@ import edu.fit.cs.computernetworks.topology.Node;
 import edu.fit.cs.computernetworks.topology.Topology;
 import edu.fit.cs.computernetworks.utils.IP;
 import edu.fit.cs.computernetworks.utils.NetUtils;
-import edu.fit.cs.computernetworks.utils.Tuple;
 
 /**
  * Base class for the two possible network node types; router and host.
@@ -111,7 +110,7 @@ public abstract class AbstractNetworkNode<T extends Node> {
 	 * @param addr
 	 * 
 	 */
-	public abstract void transport(final byte[] payload, final Transmit transmit, final Address addr);
+	public abstract void transportLayer(final byte[] payload, final Transmit transmit, final Address addr);
 	
 	/**
 	 * Network Layer
@@ -120,13 +119,13 @@ public abstract class AbstractNetworkNode<T extends Node> {
 	 * <p>When sending a given payload, this method will use the provided {@link Address} 
 	 * parameter to determine the next hop and its MAC address. It will then package the
 	 * payload in an {@link IPPacket} with source and destination addresses set before
-	 * handing it off to the {@link #linkLayer(byte[], Transmit, Tuple)} method.</p>
+	 * handing it off to the {@link #linkLayer(byte[], Transmit, Address)} method.</p>
 	 * 
 	 * <b>Receiving payloads</b>
 	 * <p>When receiving a payload, this method will convert the payload into an {@link IPPacket}.
 	 * It will then extract the source and destination IP addresses from the header and 
 	 * construct a new {@link Address} object. The address object along with the extracted
-	 * payload will be handed off to the {@link #transport(byte[], Transmit, Address)}
+	 * payload will be handed off to the {@link #transportLayer(byte[], Transmit, Address)}
 	 * method. Also note that the method will verify the header checksum. If there is a
 	 * mismatch, the package will be dropped.</p>
 	 * 
@@ -134,7 +133,6 @@ public abstract class AbstractNetworkNode<T extends Node> {
 	 * @param transmit
 	 * @param addr
 	 * 
-	 * @see Node#nextHopTo(IP)
 	 * @see Topology#arpResolve(IP)
 	 * @see IPPacket#validate(int)
 	 */
@@ -167,7 +165,7 @@ public abstract class AbstractNetworkNode<T extends Node> {
 			
 			final int checksum = pkg.getHeaderChecksum();
 			if (!pkg.validate(checksum)) {
-				logger.info("NETWORK-LAYER: IP header checksum mismatch! Dropping package...");
+				logger.info("IP header checksum mismatch! Dropping package...");
 				return;
 			}
 			
@@ -177,7 +175,7 @@ public abstract class AbstractNetworkNode<T extends Node> {
 			final IP destIPAddress = NetUtils.wrap(pkg.getDestIPAddress());
 			
 			// Deliver payload to transport-layer
-			transport(data, transmit, new Address(sourceIPAddress.toString(), destIPAddress.toString()));
+			transportLayer(data, transmit, new Address(sourceIPAddress.toString(), destIPAddress.toString()));
 			
 			break;
 		}
@@ -252,7 +250,7 @@ public abstract class AbstractNetworkNode<T extends Node> {
 	 * 
 	 * <b>Receiving payloads</b>
 	 * <p>When receiving payloads, this method will only send the payload up to the next layer.
-	 * In this case, to {@link #linkLayer(byte[], Transmit, Tuple)}.</p>
+	 * In this case, to {@link #linkLayer(byte[], Transmit, Address)}.</p>
 	 * 
 	 * @param payload
 	 * @param transmit
