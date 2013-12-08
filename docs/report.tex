@@ -143,7 +143,7 @@ The following steps explains how to compile and execute the application on the t
 \item Execute the following command to run the application: \emph{gradlew run -ProotPath=/tmp}
 \end{enumerate}
 
-Notice the property ‘rootPath’ that specifies the root path from where the threads will listen for files. The default path is still ‘/tmp/{id}’ where id is the name of the host node. See appendix \ref{appendix:runfirst} to \ref{appendix:runlast} for sample output from the application.
+Notice the property \textit{‘rootPath’} that specifies the root path from where the threads will listen for files. The default path is set to \textit{‘temp/id’} where id is the name of the host node. See appendix \ref{appendix:runfirst} to \ref{appendix:runlast} for sample output from the application. The user should also be aware that the source distribution comes with a default file-set that can be used for simple testing. These files are located in the default \textit{temp} directory at the root of the project. Running \emph{gradlew run} without specifying the \textit{rootPath} property will use the file-set mentioned when starting the application. The file-set can be restored by running \emph{gradlew restore}.
 
 \newpage
 \appendix

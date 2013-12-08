@@ -7,8 +7,6 @@
 simulator.log
 /bin
 /build
-/temp
-/temp2
 
 /.gradle
 /docs/.texpadtmp/

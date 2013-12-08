@@ -20,7 +20,7 @@ public class Host extends Node {
 	private File observableDir;
 	
 	@JsonIgnore
-	/*package*/ String rootPath = PATH_SEPARATOR + "tmp";
+	/*package*/ String rootPath = "temp";
 	
 	public File observable() {
 		if (observableDir == null) {

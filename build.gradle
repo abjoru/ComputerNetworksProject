@@ -32,3 +32,37 @@ run {
 		args rootPath
 	}
 }
+
+task restore {
+	copy {
+		from 'temp/A/received'
+		include 'file-0.bin'
+		into 'temp/C'
+		rename 'file-0.bin', 'A.txt'
+	}
+
+	copy {
+		from 'temp/B/received'
+		include 'file-0.bin'
+		into 'temp/A'
+		rename 'file-0.bin', 'B.txt'
+	}
+
+	copy {
+		from 'temp/C/received'
+		include 'file-0.bin'
+		into 'temp/B'
+		rename 'file-0.bin', 'C.txt'
+	}
+
+	copy {
+		from 'temp/C/received'
+		include 'file-1.bin'
+		into 'temp/A'
+		rename 'file-1.bin', 'C.txt'
+	}
+
+	delete 'temp/A/received'
+	delete 'temp/B/received'
+	delete 'temp/C/received'
+}
