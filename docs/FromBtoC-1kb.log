@@ -1,0 +1,20 @@
+[B] NetworkHost run: Starting with observable directory: 'C:\tmp\B'
+[C] NetworkHost run: Starting with observable directory: 'C:\tmp\C'
+[A] NetworkHost run: Starting with observable directory: 'C:\tmp\A'
+[B] NetworkHost run: New files discovered
+[B] NetworkHost run: C.txt read, sending to transport layer...
+[B] NetworkHost transport: Sending
+[B] AbstractNetworkNode networkLayer: Send (IP header=[69, 0, 0, 20, 0, 0, 0, 0, 0, 6, 7, 113, -64, -88, 25, 20, -64, -88, 25, 15])
+[B] AbstractNetworkNode linkLayer: Send (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, 0, -80, -48, -122, -9, -69, 0, 0, 0, 0, 0, 0, -28, 76, -116, 56])
+[B] AbstractNetworkNode physicalLayer: Send to network '192.168.25.0'
+[C] AbstractNetworkNode physicalLayer: Received packet
+[C] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, 0, -80, -48, -122, -9, -69, 0, 0, 0, 0, 0, 0, -28, 76, -116, 56])
+[C] AbstractNetworkNode networkLayer: Received (IP header=[69, 0, 0, 20, 0, 0, 0, 0, 0, 6, 7, 113, -64, -88, 25, 20, -64, -88, 25, 15])
+[C] NetworkHost transport: Received
+[C] NetworkHost transport: Adding Segment to buffer
+[C] NetworkHost transport: Received last segment
+[C] NetworkHost transport: Assembling 1 segments
+[C] NetworkHost application: Wrote file 'file-0.bin'
+[R] AbstractNetworkNode physicalLayer: Received packet
+[R] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, 0, -80, -48, -122, -9, -69, 0, 0, 0, 0, 0, 0, -28, 76, -116, 56])
+[R] AbstractNetworkNode linkLayer: Payload with destination MAC '00:b0:d0:f7:86:bb' does not belong to me!

@@ -1,0 +1,59 @@
+[C] NetworkHost run: Starting with observable directory: 'C:\tmp\C'
+[A] NetworkHost run: Starting with observable directory: 'C:\tmp\A'
+[B] NetworkHost run: Starting with observable directory: 'C:\tmp\B'
+[A] NetworkHost run: New files discovered
+[A] NetworkHost run: C.JPG read, sending to transport layer...
+[A] NetworkHost transport: Sending
+[A] AbstractNetworkNode networkLayer: Send (IP header=[69, 0, 0, 20, 0, 0, 0, 0, 0, 6, -61, 34, 10, 10, 20, 1, -64, -88, 25, 15])
+[A] AbstractNetworkNode linkLayer: Send (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, -48, -80, 0, -122, -69, -9, 0, -80, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, -69, 82, 56, 56])
+[A] AbstractNetworkNode physicalLayer: Send to network '10.10.20.0'
+[R] AbstractNetworkNode physicalLayer: Received packet
+[R] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, -48, -80, 0, -122, -69, -9, 0, -80, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, -69, 82, 56, 56])
+[R] NetworkRouter networkLayer: Send (IP header=[69, 0, 0, 20, 0, 0, 0, 0, 0, 6, -61, 34, 10, 10, 20, 1, -64, -88, 25, 15])
+[R] AbstractNetworkNode linkLayer: Send (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, -80, 0, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, -78, 122, 21, -108])
+[R] AbstractNetworkNode physicalLayer: Send to network '192.168.25.0'
+[C] AbstractNetworkNode physicalLayer: Received packet
+[C] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, -80, 0, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, -78, 122, 21, -108])
+[C] AbstractNetworkNode networkLayer: Received (IP header=[69, 0, 0, 20, 0, 0, 0, 0, 0, 6, -61, 34, 10, 10, 20, 1, -64, -88, 25, 15])
+[C] NetworkHost transport: Received
+[C] NetworkHost transport: Adding Segment to buffer
+[B] AbstractNetworkNode physicalLayer: Received packet
+[B] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, -80, 0, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, -78, 122, 21, -108])
+[B] AbstractNetworkNode linkLayer: Payload with destination MAC '00:b0:d0:f7:86:bb' does not belong to me!
+[A] NetworkHost transport: Sending
+[A] AbstractNetworkNode networkLayer: Send (IP header=[69, 0, 0, 20, 0, 1, 0, 0, 0, 6, -61, 33, 10, 10, 20, 1, -64, -88, 25, 15])
+[A] AbstractNetworkNode linkLayer: Send (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, -48, -80, 0, -122, -69, -9, 0, -80, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, 113, 95, 73, 83])
+[A] AbstractNetworkNode physicalLayer: Send to network '10.10.20.0'
+[R] AbstractNetworkNode physicalLayer: Received packet
+[R] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, -48, -80, 0, -122, -69, -9, 0, -80, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, 113, 95, 73, 83])
+[R] NetworkRouter networkLayer: Send (IP header=[69, 0, 0, 20, 0, 1, 0, 0, 0, 6, -61, 33, 10, 10, 20, 1, -64, -88, 25, 15])
+[R] AbstractNetworkNode linkLayer: Send (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, -80, 0, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, 120, 119, 100, -1])
+[R] AbstractNetworkNode physicalLayer: Send to network '192.168.25.0'
+[C] AbstractNetworkNode physicalLayer: Received packet
+[C] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, -80, 0, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, 120, 119, 100, -1])
+[C] AbstractNetworkNode networkLayer: Received (IP header=[69, 0, 0, 20, 0, 1, 0, 0, 0, 6, -61, 33, 10, 10, 20, 1, -64, -88, 25, 15])
+[C] NetworkHost transport: Received
+[C] NetworkHost transport: Adding Segment to buffer
+
+..... REMOVED EXTRA LOGGING TO REDUCE THE OUTPUT FILE SIZE .....
+
+[A] NetworkHost transport: Sending
+[A] AbstractNetworkNode networkLayer: Send (IP header=[69, 0, 0, 20, 0, 92, 0, 0, 0, 6, -62, -58, 10, 10, 20, 1, -64, -88, 25, 15])
+[A] AbstractNetworkNode linkLayer: Send (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, -48, -80, 0, -122, -69, -9, 0, -80, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, -87, -35, 18, 39])
+[A] AbstractNetworkNode physicalLayer: Send to network '10.10.20.0'
+[R] AbstractNetworkNode physicalLayer: Received packet
+[R] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, -48, -80, 0, -122, -69, -9, 0, -80, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, -87, -35, 18, 39])
+[R] NetworkRouter networkLayer: Send (IP header=[69, 0, 0, 20, 0, 92, 0, 0, 0, 6, -62, -58, 10, 10, 20, 1, -64, -88, 25, 15])
+[R] AbstractNetworkNode linkLayer: Send (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, -80, 0, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, 74, -17, 21, -91])
+[R] AbstractNetworkNode physicalLayer: Send to network '192.168.25.0'
+[C] AbstractNetworkNode physicalLayer: Received packet
+[C] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, -80, 0, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, 74, -17, 21, -91])
+[C] AbstractNetworkNode networkLayer: Received (IP header=[69, 0, 0, 20, 0, 92, 0, 0, 0, 6, -62, -58, 10, 10, 20, 1, -64, -88, 25, 15])
+[C] NetworkHost transport: Received
+[C] NetworkHost transport: Adding Segment to buffer
+[C] NetworkHost transport: Received last segment
+[C] NetworkHost transport: Assembling 93 segments
+[C] NetworkHost application: Wrote file 'file-0.bin'
+[B] AbstractNetworkNode physicalLayer: Received packet
+[B] AbstractNetworkNode linkLayer: Received (Ethernet header=[-86, -86, -86, -86, -86, -86, -86, -85, 0, -80, -48, -9, -122, -69, -80, 0, -48, -122, -69, -9, 0, 0, 0, 0, 0, 0, 74, -17, 21, -91])
+[B] AbstractNetworkNode linkLayer: Payload with destination MAC '00:b0:d0:f7:86:bb' does not belong to me!
