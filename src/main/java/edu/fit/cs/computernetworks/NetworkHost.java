@@ -205,8 +205,7 @@ public class NetworkHost extends AbstractNetworkNode<Host> implements Runnable {
 					final Host resolved = (Host) topology.resolve(targetHostname);
 
 					if (resolved == null) {
-						logger.severe("Unable to resolve host! Deleting file...");
-						f.delete();
+						logger.severe("Unable to resolve host! Skipping file...");
 						continue;
 					}
 
